@@ -167,6 +167,49 @@ export interface TranslationDictionary {
     check4: string;
     check5: string;
   };
+  specialLines: {
+    verticalBadge: string;
+    verticalTitle: string;
+    verticalSlope: string;
+    verticalIntercepts: string;
+    verticalGeneral: string;
+    verticalWhyNotIntercept: string;
+    verticalDistance: string;
+    horizontalBadge: string;
+    horizontalTitle: string;
+    horizontalSlope: string;
+    horizontalIntercepts: string;
+    horizontalGeneral: string;
+    horizontalWhyNotIntercept: string;
+    horizontalDistance: string;
+    originBadge: string;
+    originTitle: string;
+    originSlope: string;
+    originWhyNotIntercept: string;
+  };
+  validation: {
+    emptyA: string;
+    emptyB: string;
+    emptyGeneral: string;
+    emptyPoints: string;
+  };
+  trust: {
+    about: string;
+    privacy: string;
+    terms: string;
+    contact: string;
+    authorTitle: string;
+    authorBio: string;
+    academicMethodology: string;
+    editorialBoard: string;
+    privacyStatement: string;
+    termsStatement: string;
+    feedbackCommitment: string;
+    feedbackPlaceholder: string;
+    sendFeedback: string;
+    feedbackSent: string;
+    close: string;
+  };
   footer: {
     desc: string;
     standard: string;
@@ -357,6 +400,49 @@ export const translations: Record<Language, TranslationDictionary> = {
       check4: 'Quadrant Check: Verify that the 3 traversed quadrants match the signs of a and b.',
       check5: 'Right Angle at Origin: Ensure the 90° right angle sits strictly at origin O(0,0).',
     },
+    specialLines: {
+      verticalBadge: 'Special Case: Vertical Line',
+      verticalTitle: 'Vertical Line Detected: x = {c}',
+      verticalSlope: 'Slope does not exist (undefined, denominator Δx = 0). Inclination angle α = 90° (perpendicular to x-axis).',
+      verticalIntercepts: 'x-intercept is at A({c}, 0). The line is parallel to the y-axis, so NO y-intercept exists.',
+      verticalGeneral: 'Standard General Form: x - {c} = 0 (or x = {c}).',
+      verticalWhyNotIntercept: 'Why intercept form fails: The intercept form x/a + y/b = 1 requires both non-zero intercepts (a ≠ 0 and b ≠ 0). Because a vertical line never intersects the y-axis (unless x=0), b is undefined.',
+      verticalDistance: 'Distance from origin O(0,0) to line: d = |{c}|. Foot of perpendicular is H({c}, 0).',
+      horizontalBadge: 'Special Case: Horizontal Line',
+      horizontalTitle: 'Horizontal Line Detected: y = {d}',
+      horizontalSlope: 'Slope k = 0 (inclination angle α = 0°). The line is parallel to the x-axis.',
+      horizontalIntercepts: 'y-intercept is at B(0, {d}). It never intersects the x-axis, so NO x-intercept exists.',
+      horizontalGeneral: 'Standard General Form: y - {d} = 0 (or y = {d}).',
+      horizontalWhyNotIntercept: 'Why intercept form fails: The line never intersects the x-axis, so x-intercept a is undefined.',
+      horizontalDistance: 'Distance from origin O(0,0) to line: d = |{d}|. Foot of perpendicular is H(0, {d}).',
+      originBadge: 'Special Case: Line Through Origin',
+      originTitle: 'Line Passes Through the Origin (0, 0)',
+      originSlope: 'Slope k = {k}. Both intercepts are zero: a = 0 and b = 0.',
+      originWhyNotIntercept: 'Why intercept form fails: Substituting a = 0 and b = 0 leads to division by zero (x/0 + y/0 = 1 is mathematically invalid). Use slope-intercept form y = kx.',
+    },
+    validation: {
+      emptyA: 'x-intercept a cannot be empty. Please enter a number or fraction.',
+      emptyB: 'y-intercept b cannot be empty. Please enter a number or fraction.',
+      emptyGeneral: 'Coefficients A, B, and C cannot be empty.',
+      emptyPoints: 'Point coordinates cannot be empty.',
+    },
+    trust: {
+      about: 'About Us & Methodology',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+      contact: 'Contact & Feedback',
+      authorTitle: 'Academic Methodology & Authorship',
+      authorBio: 'Developed by senior secondary mathematics curriculum specialists and STEM educators at Formula CalcKit. Dedicated to delivering rigorous, vector-grade analytic geometry tools with real-time geometric and algebraic verification.',
+      academicMethodology: 'Curriculum Standards & Methodology',
+      editorialBoard: 'Conforms to standards in AP Precalculus, IB Mathematics Analysis & Approaches, Gaokao Analytic Geometry, Spanish Selectividad, and French Baccalauréat. Employs both algebraic extremum analysis (completing the square) and Cartesian visual verification.',
+      privacyStatement: 'Client-Side Privacy Guarantee: All calculations, equations, and graphs are generated 100% locally in your browser. No homework, student queries, or personal inputs are transmitted or stored on external servers.',
+      termsStatement: 'Free for non-commercial educational use by students, teachers, tutors, and schools worldwide. All formulas, proofs, and vector graph exports may be referenced in coursework and class materials.',
+      feedbackCommitment: 'Have an inquiry, suggestion, or exam problem to suggest? Our mathematics team reviews all feedback.',
+      feedbackPlaceholder: 'Share your questions, feedback, or suggestions with our math team...',
+      sendFeedback: 'Send Feedback',
+      feedbackSent: 'Thank you! Your feedback has been received.',
+      close: 'Close',
+    },
     footer: {
       desc: 'Intercept Form Line Equation Calculator & Homework Graph Verification Platform',
       standard: 'Standard Form: x/a + y/b = 1',
@@ -545,6 +631,49 @@ export const translations: Record<Language, TranslationDictionary> = {
       check3: 'Sentido de Inclinación: k > 0 sube hacia la derecha (agudo); k < 0 baja hacia la derecha (obtuso).',
       check4: 'Comprobación de Cuadrantes: Verifique que los 3 cuadrantes cruzados concuerden con los signos de a y b.',
       check5: 'Ángulo Recto: Asegúrese de que el ángulo de 90° se ubique exactamente en el origen O(0,0).',
+    },
+    specialLines: {
+      verticalBadge: 'Caso Especial: Recta Vertical',
+      verticalTitle: 'Recta Vertical Detectada: x = {c}',
+      verticalSlope: 'La pendiente no existe (indefinida, denominador Δx = 0). Ángulo de inclinación α = 90° (perpendicular al eje x).',
+      verticalIntercepts: 'La intersección con el eje x es A({c}, 0). La recta es paralela al eje y, por lo que NO existe intersección con el eje y.',
+      verticalGeneral: 'Forma General Estándar: x - {c} = 0 (o x = {c}).',
+      verticalWhyNotIntercept: 'Por qué no admite forma simétrica: La ecuación canónica x/a + y/b = 1 exige denominadores no nulos (a ≠ 0 y b ≠ 0). Al ser paralela al eje y, la ordenada en el origen b no está definida.',
+      verticalDistance: 'Distancia del origen O(0,0) a la recta: d = |{c}|. El pie de la perpendicular es H({c}, 0).',
+      horizontalBadge: 'Caso Especial: Recta Horizontal',
+      horizontalTitle: 'Recta Horizontal Detectada: y = {d}',
+      horizontalSlope: 'Pendiente k = 0 (ángulo de inclinación α = 0°). Es paralela al eje x.',
+      horizontalIntercepts: 'La ordenada en el origen es B(0, {d}). No corta al eje x, por lo que NO existe abscisa en el origen.',
+      horizontalGeneral: 'Forma General Estándar: y - {d} = 0 (o y = {d}).',
+      horizontalWhyNotIntercept: 'Por qué no admite forma simétrica: La recta nunca corta al eje x, por lo que a no está definida.',
+      horizontalDistance: 'Distancia del origen O(0,0) a la recta: d = |{d}|. El pie de la perpendicular es H(0, {d}).',
+      originBadge: 'Caso Especial: Recta por el Origen',
+      originTitle: 'La Recta Pasa por el Origen (0, 0)',
+      originSlope: 'Pendiente k = {k}. Ambas intersecciones son cero: a = 0 y b = 0.',
+      originWhyNotIntercept: 'Por qué no admite forma simétrica: Sustituir a = 0 y b = 0 produce una división entre cero (x/0 + y/0 = 1 es matemáticamente inválido). Use la forma y = kx.',
+    },
+    validation: {
+      emptyA: 'La abscisa en el origen a no puede estar vacía. Ingrese un número o fracción.',
+      emptyB: 'La ordenada en el origen b no puede estar vacía. Ingrese un número o fracción.',
+      emptyGeneral: 'Los coeficientes A, B y C no pueden estar vacíos.',
+      emptyPoints: 'Las coordenadas de los puntos no pueden estar vacías.',
+    },
+    trust: {
+      about: 'Quiénes Somos y Metodología',
+      privacy: 'Política de Privacidad',
+      terms: 'Términos de Servicio',
+      contact: 'Contacto y Sugerencias',
+      authorTitle: 'Metodología Académica y Autoría',
+      authorBio: 'Desarrollado por especialistas en didáctica de las matemáticas y educadores STEM de Formula CalcKit. Comprometidos con herramientas de geometría analítica rigurosas y verificación visual.',
+      academicMethodology: 'Estándares Curriculares y Didáctica',
+      editorialBoard: 'Adaptado a los programas de Bachillerato, Selectividad (EvAU/EBAU), AP Precalculus y Baccalauréat. Combina la demostración algebraica (completar el cuadrado) con la intuición geométrica cartesiana.',
+      privacyStatement: 'Privacidad 100% en el Cliente: Todos los cálculos y gráficos se ejecutan localmente en su navegador. No se guardan ni recopilan datos de tareas o consultas personales.',
+      termsStatement: 'Acceso gratuito para uso educativo sin fines comerciales por parte de estudiantes, profesores y centros educativos.',
+      feedbackCommitment: '¿Tiene alguna consulta o ejercicio para sugerir? Nuestro equipo docente revisa cada mensaje.',
+      feedbackPlaceholder: 'Comparta sus dudas o sugerencias con nuestro equipo de matemáticas...',
+      sendFeedback: 'Enviar Mensaje',
+      feedbackSent: '¡Gracias! Su mensaje ha sido recibido.',
+      close: 'Cerrar',
     },
     footer: {
       desc: 'Calculadora de Ecuación Simétrica de la Recta y Plataforma de Verificación Gráfica',
@@ -735,6 +864,49 @@ export const translations: Record<Language, TranslationDictionary> = {
       check4: 'Contrôle des Quadrants : Vérifiez que les 3 quadrants traversés correspondent aux signes de a et b.',
       check5: 'Angle Droit : Assurez-vous que l’angle de 90° soit situé rigoureusement à l’origine O(0,0).',
     },
+    specialLines: {
+      verticalBadge: 'Cas Particulier : Droite Verticale',
+      verticalTitle: 'Droite Verticale Détectée : x = {c}',
+      verticalSlope: 'La pente n’est pas définie (dénominateur Δx = 0). Angle d’inclinaison α = 90° (perpendiculaire à l’axe des abscisses).',
+      verticalIntercepts: 'L’intersection avec l’axe x est A({c}, 0). La droite est parallèle à l’axe y, donc il n’y a AUCUNE ordonnée à l’origine.',
+      verticalGeneral: 'Forme Générale Standard : x - {c} = 0 (ou x = {c}).',
+      verticalWhyNotIntercept: 'Pourquoi la forme symétrique est impossible : L’équation symétrique x/a + y/b = 1 nécessite des dénominateurs non nuls (a ≠ 0 et b ≠ 0). Comme la droite ne coupe jamais l’axe y, b n’est pas défini.',
+      verticalDistance: 'Distance de l’origine O(0,0) à la droite : d = |{c}|. Le pied de la hauteur est H({c}, 0).',
+      horizontalBadge: 'Cas Particulier : Droite Horizontale',
+      horizontalTitle: 'Droite Horizontale Détectée : y = {d}',
+      horizontalSlope: 'Pente k = 0 (angle d’inclinaison α = 0°). La droite est parallèle à l’axe des abscisses.',
+      horizontalIntercepts: 'L’ordonnée à l’origine est B(0, {d}). Elle ne coupe jamais l’axe x, donc il n’y a AUCUNE abscisse à l’origine.',
+      horizontalGeneral: 'Forme Générale Standard : y - {d} = 0 (ou y = {d}).',
+      horizontalWhyNotIntercept: 'Pourquoi la forme symétrique est impossible : La droite ne coupe jamais l’axe x, donc a n’est pas défini.',
+      horizontalDistance: 'Distance de l’origine O(0,0) à la droite : d = |{d}|. Le pied de la hauteur est H(0, {d}).',
+      originBadge: 'Cas Particulier : Droite Passant par l’Origine',
+      originTitle: 'La Droite Passe par l’Origine (0, 0)',
+      originSlope: 'Pente k = {k}. Les deux intersections sont nulles : a = 0 et b = 0.',
+      originWhyNotIntercept: 'Pourquoi la forme symétrique est impossible : Remplacer a = 0 et b = 0 entraîne une division par zéro (x/0 + y/0 = 1 est invalide). Utilisez la forme réduite y = kx.',
+    },
+    validation: {
+      emptyA: 'L’abscisse à l’origine a ne peut pas être vide. Veuillez saisir un nombre ou une fraction.',
+      emptyB: 'L’ordonnée à l’origine b ne peut pas être vide. Veuillez saisir un nombre ou une fraction.',
+      emptyGeneral: 'Les coefficients A, B et C ne peuvent pas être vides.',
+      emptyPoints: 'Les coordonnées des points ne peuvent pas être vides.',
+    },
+    trust: {
+      about: 'À Propos et Méthodologie',
+      privacy: 'Politique de Confidentialité',
+      terms: 'Conditions d’Utilisation',
+      contact: 'Contact et Retours',
+      authorTitle: 'Méthodologie Académique et Paternité',
+      authorBio: 'Développé par des enseignants de mathématiques et spécialistes STEM chez Formula CalcKit. Dédié aux outils de géométrie analytique vectoriels rigoureux et fiables.',
+      academicMethodology: 'Normes Pédagogiques et Programmes',
+      editorialBoard: 'Conforme aux programmes du Baccalauréat Général (Spécialité Mathématiques), de l’IB Mathematics et d’AP Precalculus. Associe la complétion du carré à l’intuition visuelle cartésienne.',
+      privacyStatement: 'Confidentialité Totale Côté Client : Tous les calculs, équations et tracés sont traités localement sur votre appareil. Aucune donnée d’exercice ni saisie n’est transmise ou collectée.',
+      termsStatement: 'Accès gratuit pour un usage éducatif non commercial par les élèves, enseignants et établissements scolaires.',
+      feedbackCommitment: 'Une remarque, une question ou une suggestion d’exercice ? Notre équipe pédagogique lit tous vos retours.',
+      feedbackPlaceholder: 'Partagez vos questions ou suggestions avec notre équipe mathématique...',
+      sendFeedback: 'Envoyer le Message',
+      feedbackSent: 'Merci ! Votre message a bien été reçu.',
+      close: 'Fermer',
+    },
     footer: {
       desc: 'Calculateur d’Équation Symétrique de Droite et Plateforme de Vérification Graphique',
       standard: 'Forme Symétrique : x/a + y/b = 1',
@@ -924,6 +1096,49 @@ export const translations: Record<Language, TranslationDictionary> = {
       check4: 'Verificação dos Quadrantes: Confirme se os 3 quadrantes cruzados conferem com os sinais de a e b.',
       check5: 'Ângulo Reto: Certifique-se de que o ângulo reto de 90° fique estritamente na origem O(0,0).',
     },
+    specialLines: {
+      verticalBadge: 'Caso Especial: Reta Vertical',
+      verticalTitle: 'Reta Vertical Detectada: x = {c}',
+      verticalSlope: 'O coeficiente angular não existe (indefinido, denominador Δx = 0). Ângulo de inclinação α = 90° (perpendicular ao eixo x).',
+      verticalIntercepts: 'O intercepto no eixo x é A({c}, 0). A reta é paralela ao eixo y, portanto NÃO existe intercepto no eixo y.',
+      verticalGeneral: 'Forma Geral Padrão: x - {c} = 0 (ou x = {c}).',
+      verticalWhyNotIntercept: 'Por que a forma segmentária é impossível: A equação segmentária x/a + y/b = 1 requer denominadores não nulos (a ≠ 0 e b ≠ 0). Por não interceptar o eixo y, b não é definido.',
+      verticalDistance: 'Distância da origem O(0,0) à reta: d = |{c}|. O pé da perpendicular é H({c}, 0).',
+      horizontalBadge: 'Caso Especial: Reta Horizontal',
+      horizontalTitle: 'Reta Horizontal Detectada: y = {d}',
+      horizontalSlope: 'Coeficiente angular k = 0 (ângulo de inclinação α = 0°). A reta é paralela ao eixo x.',
+      horizontalIntercepts: 'O intercepto no eixo y é B(0, {d}). Não intercepta o eixo x, logo NÃO existe intercepto no eixo x.',
+      horizontalGeneral: 'Forma Geral Padrão: y - {d} = 0 (ou y = {d}).',
+      horizontalWhyNotIntercept: 'Por que a forma segmentária é impossível: A reta nunca intercepta o eixo x, portanto a não é definido.',
+      horizontalDistance: 'Distância da origem O(0,0) à reta: d = |{d}|. O pé da perpendicular é H(0, {d}).',
+      originBadge: 'Caso Especial: Reta Passando pela Origem',
+      originTitle: 'A Reta Passa pela Origem (0, 0)',
+      originSlope: 'Coeficiente angular k = {k}. Ambos os interceptos são nulos: a = 0 e b = 0.',
+      originWhyNotIntercept: 'Por que a forma segmentária é impossível: Substituir a = 0 e b = 0 resulta em divisão por zero (x/0 + y/0 = 1 é matematicamente inválido). Use a forma reduzida y = kx.',
+    },
+    validation: {
+      emptyA: 'O intercepto no eixo x (a) não pode ficar vazio. Digite um número ou fração.',
+      emptyB: 'O intercepto no eixo y (b) não pode ficar vazio. Digite um número ou fração.',
+      emptyGeneral: 'Os coeficientes A, B e C não podem ficar vazios.',
+      emptyPoints: 'As coordenadas dos pontos não podem ficar vazias.',
+    },
+    trust: {
+      about: 'Sobre Nós e Metodologia',
+      privacy: 'Política de Privacidade',
+      terms: 'Termos de Serviço',
+      contact: 'Contato e Sugestões',
+      authorTitle: 'Metodologia Acadêmica e Autoria',
+      authorBio: 'Desenvolvido por professores de matemática e educadores STEM na Formula CalcKit. Focado em ferramentas vetoriais de geometria analítica rigorosas para estudantes.',
+      academicMethodology: 'Padrões Curriculares e Ensino',
+      editorialBoard: 'Alinhado às diretrizes do ENEM, Vestibulares Brasileiros, AP Precalculus e IB Mathematics. Combina demonstrações algébricas (completar o quadrado) com visualização cartesiana interativa.',
+      privacyStatement: 'Privacidade 100% no Cliente: Todos os cálculos e gráficos ocorrem de forma estritamente local em seu navegador. Nenhuma informação pessoal ou exercício é enviado para servidores externos.',
+      termsStatement: 'Acesso gratuito para uso educacional e não comercial por alunos, professores e escolas.',
+      feedbackCommitment: 'Tem alguma dúvida ou questão para sugerir? Nossa equipe docente analisa todos os envios.',
+      feedbackPlaceholder: 'Compartilhe suas dúvidas ou sugestões com nossa equipe de matemática...',
+      sendFeedback: 'Enviar Mensagem',
+      feedbackSent: 'Obrigado! Sua mensagem foi recebida com sucesso.',
+      close: 'Fechar',
+    },
     footer: {
       desc: 'Calculadora da Equação Segmentária da Reta e Verificador Gráfico',
       standard: 'Forma Segmentária: x/a + y/b = 1',
@@ -1111,6 +1326,49 @@ export const translations: Record<Language, TranslationDictionary> = {
       check3: '倾斜方向：斜率 k > 0 向右上方，倾斜角为锐角；k < 0 向右下方，倾斜角为钝角。',
       check4: '所过象限：根据 a, b 正负核对直线穿过的三个象限是否与画图一致。',
       check5: '三角形直角：三角形 △AOB 的直角是否严格坐落在坐标原点 O 处。',
+    },
+    specialLines: {
+      verticalBadge: '特殊情形：垂直于坐标轴的直线（垂直线）',
+      verticalTitle: '检测到垂直直线：x = {c}',
+      verticalSlope: '斜率不存在（分母 Δx = 0，无定义）。倾斜角 α = 90°（垂直于 x 轴）。',
+      verticalIntercepts: '与 x 轴交点为 A({c}, 0)；由于与 y 轴平行，因此不存在纵截距 b。',
+      verticalGeneral: '标准一般式方程：x - {c} = 0（或 x = {c}）。',
+      verticalWhyNotIntercept: '为什么不能用截距式：截距式 x/a + y/b = 1 的前提是直线的两截距均不为 0（a ≠ 0 且 b ≠ 0）。垂直线平行于 y 轴没有纵截距，分母无意义，故截距式不能表示垂直线！',
+      verticalDistance: '原点 O(0,0) 到直线的距离：d = |{c}|。垂足坐标为 H({c}, 0)。',
+      horizontalBadge: '特殊情形：平行于横轴的直线（水平线）',
+      horizontalTitle: '检测到水平直线：y = {d}',
+      horizontalSlope: '斜率 k = 0（倾斜角 α = 0°）。平行于 x 轴。',
+      horizontalIntercepts: '与 y 轴交点为 B(0, {d})；与 x 轴无交点，因此不存在横截距 a。',
+      horizontalGeneral: '标准一般式方程：y - {d} = 0（或 y = {d}）。',
+      horizontalWhyNotIntercept: '为什么不能用截距式：直线与 x 轴平行无交点，没有横截距 a，分母无意义，故截距式不能表示水平线！',
+      horizontalDistance: '原点 O(0,0) 到直线的距离：d = |{d}|。垂足坐标为 H(0, {d})。',
+      originBadge: '特殊情形：经过原点的直线',
+      originTitle: '直线经过坐标原点 (0, 0)',
+      originSlope: '斜率 k = {k}。两截距均为零：a = 0，b = 0。',
+      originWhyNotIntercept: '为什么不能用截距式：代入 a=0 和 b=0 会导致分母为 0（x/0 + y/0 = 1 在数学上不成立）。过原点的直线应使用斜截式 y = kx 或一般式。',
+    },
+    validation: {
+      emptyA: '横截距 a 不能为空，请输入有效数值或分数。',
+      emptyB: '纵截距 b 不能为空，请输入有效数值或分数。',
+      emptyGeneral: '一般式系数 A、B 和 C 均不能为空。',
+      emptyPoints: '点坐标数值不能为空。',
+    },
+    trust: {
+      about: '关于我们与学术教研',
+      privacy: '隐私政策',
+      terms: '服务条款',
+      contact: '联系作者与教研反馈',
+      authorTitle: '学术教研团队与权威方法论背书',
+      authorBio: '由 Formula CalcKit 联合多位长期执教高中一线、深耕高考解析几何命题研究的高中数学教研员共同研发。专注于为全球中学生提供矢量高保真、推导无漏洞的数理图解工具。',
+      academicMethodology: '教学大纲与考试标准',
+      editorialBoard: '严格遵循普通高中数学课程标准（解析几何专题）、AP Precalculus、IB Mathematics AA 以及西班牙 Selectividad、法国 Baccalauréat 答题规范。强调“二次函数配方法求极值”这一解析几何本原思想与笛卡尔坐标画板双向互证。',
+      privacyStatement: '全本地纯客户端隐私承诺：本站所有坐标计算、代数配方推导与画板图形生成均在您的浏览器本地实时完成，绝不会将学生的作业题目、练习草稿或任何个人信息上传至外部服务器。',
+      termsStatement: '本平台面向全球中学生、数学教师、教研员及公立学校终身免费开放非商业性教育使用。本站推导步骤、答题规范与矢量图表均可自由引用至课堂教学课件与错题本整理中。',
+      feedbackCommitment: '如果您在使用过程中发现任何典型考题或有优化建议，欢迎联系教研组，我们将在 24 小时内由数学教研老师核对并答复。',
+      feedbackPlaceholder: '在此输入您的疑问、题目反馈或教学建议...',
+      sendFeedback: '提交反馈',
+      feedbackSent: '已收到您的反馈！感谢您对高中数学教学工具的支持。',
+      close: '关闭',
     },
     footer: {
       desc: '平面截距式直线方程计算器 · 高中解析几何备考与学生画图核对工具',

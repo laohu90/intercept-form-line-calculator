@@ -18,8 +18,8 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   // Viewport parameters
-  const [zoom, setZoom] = useState(42); // pixels per coordinate unit
-  const [pan, setPan] = useState({ x: 0, y: 0 }); // offset from center in pixels
+  const [zoom, setZoom] = useState(42);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [draggingPoint, setDraggingPoint] = useState<'A' | 'B' | null>(null);
@@ -52,25 +52,31 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
   const centerX = dimensions.width / 2 + pan.x;
   const centerY = dimensions.height / 2 + pan.y;
 
-  // Convert math coords (x, y) to SVG screen coords (sx, sy)
-  const toScreen = useCallback((x: number, y: number) => {
-    return {
-      x: centerX + x * zoom,
-      y: centerY - y * zoom,
-    };
-  }, [centerX, centerY, zoom]);
+  const toScreen = useCallback(
+    (x: number, y: number) => {
+      return {
+        x: centerX + x * zoom,
+        y: centerY - y * zoom,
+      };
+    },
+    [centerX, centerY, zoom]
+  );
 
-  // Convert SVG screen coords to math coords
-  const toMath = useCallback((sx: number, sy: number) => {
-    return {
-      x: (sx - centerX) / zoom,
-      y: (centerY - sy) / zoom,
-    };
-  }, [centerX, centerY, zoom]);
+  const toMath = useCallback(
+    (sx: number, sy: number) => {
+      return {
+        x: (sx - centerX) / zoom,
+        y: (centerY - sy) / zoom,
+      };
+    },
+    [centerX, centerY, zoom]
+  );
 
   const resetView = () => {
     setPan({ x: 0, y: 0 });
-    const maxVal = Math.max(Math.abs(calc.a), Math.abs(calc.b), 5);
+    const refA = !isNaN(calc.a) ? calc.a : 3;
+    const refB = !isNaN(calc.b) ? calc.b : 4;
+    const maxVal = Math.max(Math.abs(refA), Math.abs(refB), 5);
     const targetZoom = Math.min(60, Math.max(26, (dimensions.width * 0.35) / maxVal));
     setZoom(targetZoom);
   };
@@ -86,7 +92,7 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (draggingPoint) {
-      if (!svgRef.current) return;
+      if (!svgRef.current || calc.kind !== 'intercept') return;
       const rect = svgRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
@@ -117,7 +123,6 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
     setDraggingPoint(null);
   };
 
-  // Export SVG as PNG image for homework/notes
   const exportAsPng = () => {
     if (!svgRef.current) return;
     const svgElement = svgRef.current;
@@ -141,7 +146,7 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
       URLObj.revokeObjectURL(blobURL);
 
       const aLink = document.createElement('a');
-      aLink.download = `intercept_line_a${calc.a}_b${calc.b}.png`;
+      aLink.download = `geometry_line_${calc.kind}.png`;
       aLink.href = canvas.toDataURL('image/png');
       aLink.click();
     };
@@ -149,7 +154,7 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
   };
 
   // Grid tick computation
-  const minX = Math.floor((-centerX) / zoom);
+  const minX = Math.floor(-centerX / zoom);
   const maxX = Math.ceil((dimensions.width - centerX) / zoom);
   const minY = Math.floor((centerY - dimensions.height) / zoom);
   const maxY = Math.ceil(centerY / zoom);
@@ -163,18 +168,25 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
     if (i !== 0) yTicks.push(i);
   }
 
-  // Line end points extending beyond canvas
+  const pO = toScreen(0, 0);
+
+  // Standard line points
+  const pA = toScreen(calc.a || 0, 0);
+  const pB = toScreen(0, calc.b || 0);
+  const pH = toScreen(calc.footOfPerpendicular.x, calc.footOfPerpendicular.y);
+
+  // Normal line extension
   const lineP1 = toScreen(minX - 3, calc.slope * (minX - 3 - calc.a));
   const lineP2 = toScreen(maxX + 3, calc.slope * (maxX + 3 - calc.a));
-
-  const pA = toScreen(calc.a, 0);
-  const pB = toScreen(0, calc.b);
-  const pO = toScreen(0, 0);
-  const pH = toScreen(calc.footOfPerpendicular.x, calc.footOfPerpendicular.y);
 
   const rightAngleSize = 13;
   const oSignX = calc.a >= 0 ? 1 : -1;
   const oSignY = calc.b >= 0 ? -1 : 1;
+
+  // Vertical line screen x
+  const vertX = calc.kind === 'vertical' ? toScreen(calc.specialConstant ?? calc.a, 0).x : 0;
+  // Horizontal line screen y
+  const horizY = calc.kind === 'horizontal' ? toScreen(0, calc.specialConstant ?? calc.b).y : 0;
 
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs flex flex-col">
@@ -209,14 +221,16 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
             <span>{t.canvas.altitude}</span>
           </button>
 
-          <button
-            onClick={() => setShowTriangleArea(!showTriangleArea)}
-            className={`px-2.5 py-1 rounded-md border text-xs transition-colors flex items-center gap-1 cursor-pointer ${
-              showTriangleArea ? 'bg-white border-slate-300 text-slate-900 shadow-2xs font-medium' : 'bg-slate-100 border-transparent text-slate-400'
-            }`}
-          >
-            <span>{t.canvas.triangleArea}</span>
-          </button>
+          {calc.kind === 'intercept' && (
+            <button
+              onClick={() => setShowTriangleArea(!showTriangleArea)}
+              className={`px-2.5 py-1 rounded-md border text-xs transition-colors flex items-center gap-1 cursor-pointer ${
+                showTriangleArea ? 'bg-white border-slate-300 text-slate-900 shadow-2xs font-medium' : 'bg-slate-100 border-transparent text-slate-400'
+              }`}
+            >
+              <span>{t.canvas.triangleArea}</span>
+            </button>
+          )}
 
           <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
 
@@ -317,8 +331,8 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
             </g>
           )}
 
-          {/* Triangle Area Shading */}
-          {showTriangleArea && calc.isValidIntercept && (
+          {/* Triangle Area Shading (only if valid intercept line) */}
+          {showTriangleArea && calc.kind === 'intercept' && (
             <polygon
               points={`${pO.x},${pO.y} ${pA.x},${pA.y} ${pB.x},${pB.y}`}
               fill="#3b82f6"
@@ -330,12 +344,14 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
           )}
 
           {/* Right Angle at Origin */}
-          <path
-            d={`M ${pO.x + oSignX * rightAngleSize} ${pO.y} L ${pO.x + oSignX * rightAngleSize} ${pO.y + oSignY * rightAngleSize} L ${pO.x} ${pO.y + oSignY * rightAngleSize}`}
-            fill="none"
-            stroke="#94a3b8"
-            strokeWidth="1.5"
-          />
+          {calc.kind === 'intercept' && (
+            <path
+              d={`M ${pO.x + oSignX * rightAngleSize} ${pO.y} L ${pO.x + oSignX * rightAngleSize} ${pO.y + oSignY * rightAngleSize} L ${pO.x} ${pO.y + oSignY * rightAngleSize}`}
+              fill="none"
+              stroke="#94a3b8"
+              strokeWidth="1.5"
+            />
+          )}
 
           {/* Coordinate Axes */}
           <g className="axes-layer">
@@ -421,8 +437,8 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
             })}
           </g>
 
-          {/* Line Equation */}
-          {calc.isValidIntercept && (
+          {/* 1. Normal Intercept Line Plot */}
+          {calc.kind === 'intercept' && (
             <g className="line-layer">
               <line
                 x1={lineP1.x}
@@ -467,143 +483,219 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
                   |AB|={formatFloat(calc.segmentLength)}
                 </text>
               </g>
+
+              {/* Altitude OH */}
+              {showAltitude && (
+                <g className="altitude-layer">
+                  <line
+                    x1={pO.x}
+                    y1={pO.y}
+                    x2={pH.x}
+                    y2={pH.y}
+                    stroke="#ea580c"
+                    strokeWidth="1.8"
+                    strokeDasharray="4 3"
+                  />
+                  <circle cx={pH.x} cy={pH.y} r="4.5" fill="#ea580c" />
+                  <text
+                    x={pH.x + 8}
+                    y={pH.y - 8}
+                    className="text-xs font-semibold fill-orange-800 font-mono select-none"
+                  >
+                    H({formatFloat(calc.footOfPerpendicular.x)}, {formatFloat(calc.footOfPerpendicular.y)})
+                  </text>
+                  <text
+                    x={(pO.x + pH.x) / 2 - 18}
+                    y={(pO.y + pH.y) / 2 + 4}
+                    className="text-xs font-bold fill-orange-700 font-mono select-none"
+                  >
+                    d={formatFloat(calc.originDistance)}
+                  </text>
+                </g>
+              )}
+
+              {/* Area label */}
+              {showTriangleArea && (
+                <g
+                  transform={`translate(${(pO.x + pA.x + pB.x) / 3}, ${(pO.y + pA.y + pB.y) / 3})`}
+                >
+                  <rect
+                    x="-42"
+                    y="-13"
+                    width="84"
+                    height="24"
+                    rx="5"
+                    fill="#ffffff"
+                    fillOpacity="0.95"
+                    stroke="#93c5fd"
+                    strokeWidth="1.2"
+                  />
+                  <text
+                    x="0"
+                    y="3"
+                    textAnchor="middle"
+                    className="text-xs font-semibold fill-blue-800 font-mono select-none"
+                  >
+                    S={formatFloat(calc.triangleArea)}
+                  </text>
+                </g>
+              )}
+
+              {/* Interactive Drag Points A and B */}
+              <g className="points-layer">
+                {/* Point A */}
+                <g className="cursor-ew-resize">
+                  <circle cx={pA.x} cy={pA.y} r="16" fill="transparent" data-point="A" />
+                  <circle
+                    cx={pA.x}
+                    cy={pA.y}
+                    r="7"
+                    fill="#ffffff"
+                    stroke="#2563eb"
+                    strokeWidth="3"
+                    data-point="A"
+                  />
+                  <circle cx={pA.x} cy={pA.y} r="3" fill="#2563eb" data-point="A" />
+                  <text
+                    x={pA.x}
+                    y={calc.b > 0 ? pA.y + 20 : pA.y - 12}
+                    textAnchor="middle"
+                    className="text-sm font-bold fill-blue-800 font-mono select-none pointer-events-none"
+                  >
+                    A({formatFloat(calc.a)}, 0)
+                  </text>
+                </g>
+
+                {/* Point B */}
+                <g className="cursor-ns-resize">
+                  <circle cx={pB.x} cy={pB.y} r="16" fill="transparent" data-point="B" />
+                  <circle
+                    cx={pB.x}
+                    cy={pB.y}
+                    r="7"
+                    fill="#ffffff"
+                    stroke="#2563eb"
+                    strokeWidth="3"
+                    data-point="B"
+                  />
+                  <circle cx={pB.x} cy={pB.y} r="3" fill="#2563eb" data-point="B" />
+                  <text
+                    x={calc.a > 0 ? pB.x - 14 : pB.x + 14}
+                    y={pB.y + 5}
+                    textAnchor={calc.a > 0 ? 'end' : 'start'}
+                    className="text-sm font-bold fill-blue-800 font-mono select-none pointer-events-none"
+                  >
+                    B(0, {formatFloat(calc.b)})
+                  </text>
+                </g>
+              </g>
             </g>
           )}
 
-          {/* Perpendicular OH */}
-          {showAltitude && calc.isValidIntercept && (
-            <g className="altitude-layer">
+          {/* 2. Vertical Line Plot (x = c) */}
+          {calc.kind === 'vertical' && (
+            <g className="vertical-line-layer">
               <line
-                x1={pO.x}
-                y1={pO.y}
-                x2={pH.x}
-                y2={pH.y}
-                stroke="#ea580c"
-                strokeWidth="1.8"
-                strokeDasharray="4 3"
+                x1={vertX}
+                y1={0}
+                x2={vertX}
+                y2={dimensions.height}
+                stroke="#2563eb"
+                strokeWidth="3"
               />
-              <circle cx={pH.x} cy={pH.y} r="4.5" fill="#ea580c" />
+              {/* Point on x-axis */}
+              <circle cx={vertX} cy={centerY} r="6" fill="#2563eb" />
               <text
-                x={pH.x + 8}
-                y={pH.y - 8}
-                className="text-xs font-semibold fill-orange-800 font-mono select-none"
+                x={vertX + 12}
+                y={centerY - 10}
+                className="text-sm font-bold fill-blue-800 font-mono select-none"
               >
-                H({formatFloat(calc.footOfPerpendicular.x)}, {formatFloat(calc.footOfPerpendicular.y)})
+                x = {calc.specialConstant} (A({calc.specialConstant}, 0))
               </text>
-              <text
-                x={(pO.x + pH.x) / 2 - 18}
-                y={(pO.y + pH.y) / 2 + 4}
-                className="text-xs font-bold fill-orange-700 font-mono select-none"
-              >
-                d={formatFloat(calc.originDistance)}
-              </text>
+              {/* Perpendicular along x axis */}
+              {showAltitude && (
+                <>
+                  <line
+                    x1={pO.x}
+                    y1={pO.y}
+                    x2={vertX}
+                    y2={centerY}
+                    stroke="#ea580c"
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                  />
+                  <text
+                    x={(pO.x + vertX) / 2}
+                    y={centerY + 18}
+                    textAnchor="middle"
+                    className="text-xs font-bold fill-orange-700 font-mono"
+                  >
+                    d = {calc.originDistance}
+                  </text>
+                </>
+              )}
             </g>
           )}
 
-          {/* Inclination Angle Arc */}
-          {showAngle && calc.isValidIntercept && (
-            <g className="angle-layer">
-              {(() => {
-                const r = 26;
-                const endAngle = -calc.inclinationRad;
-                const x1 = pA.x + r;
-                const y1 = pA.y;
-                const x2 = pA.x + r * Math.cos(endAngle);
-                const y2 = pA.y + r * Math.sin(endAngle);
-                const largeArc = calc.inclinationDeg > 180 ? 1 : 0;
-                const pathData = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${y2}`;
+          {/* 3. Horizontal Line Plot (y = d) */}
+          {calc.kind === 'horizontal' && (
+            <g className="horizontal-line-layer">
+              <line
+                x1={0}
+                y1={horizY}
+                x2={dimensions.width}
+                y2={horizY}
+                stroke="#2563eb"
+                strokeWidth="3"
+              />
+              <circle cx={centerX} cy={horizY} r="6" fill="#2563eb" />
+              <text
+                x={centerX + 12}
+                y={horizY - 10}
+                className="text-sm font-bold fill-blue-800 font-mono select-none"
+              >
+                y = {calc.specialConstant} (B(0, {calc.specialConstant}))
+              </text>
+              {showAltitude && (
+                <>
+                  <line
+                    x1={pO.x}
+                    y1={pO.y}
+                    x2={centerX}
+                    y2={horizY}
+                    stroke="#ea580c"
+                    strokeWidth="2"
+                    strokeDasharray="4 3"
+                  />
+                  <text
+                    x={centerX + 16}
+                    y={(pO.y + horizY) / 2}
+                    className="text-xs font-bold fill-orange-700 font-mono"
+                  >
+                    d = {calc.originDistance}
+                  </text>
+                </>
+              )}
+            </g>
+          )}
 
+          {/* 4. Origin Line Plot (y = kx) */}
+          {calc.kind === 'origin' && (
+            <g className="origin-line-layer">
+              {(() => {
+                const k = calc.originSlope ?? 1;
+                const p1 = toScreen(minX - 3, k * (minX - 3));
+                const p2 = toScreen(maxX + 3, k * (maxX + 3));
                 return (
                   <>
-                    <path d={pathData} fill="none" stroke="#059669" strokeWidth="2" />
-                    <text
-                      x={pA.x + r + 6}
-                      y={pA.y - 8}
-                      className="text-xs font-bold fill-emerald-800 font-mono select-none"
-                    >
-                      α={formatFloat(calc.inclinationDeg)}°
+                    <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke="#2563eb" strokeWidth="2.5" />
+                    <circle cx={pO.x} cy={pO.y} r="6" fill="#2563eb" />
+                    <text x={pO.x + 12} y={pO.y - 10} className="text-sm font-bold fill-blue-800 font-mono">
+                      y = {formatFloat(k)}x (Passes Origin)
                     </text>
                   </>
                 );
               })()}
-            </g>
-          )}
-
-          {/* Area Label Inside Triangle */}
-          {showTriangleArea && calc.isValidIntercept && (
-            <g
-              transform={`translate(${(pO.x + pA.x + pB.x) / 3}, ${(pO.y + pA.y + pB.y) / 3})`}
-            >
-              <rect
-                x="-42"
-                y="-13"
-                width="84"
-                height="24"
-                rx="5"
-                fill="#ffffff"
-                fillOpacity="0.95"
-                stroke="#93c5fd"
-                strokeWidth="1.2"
-              />
-              <text
-                x="0"
-                y="3"
-                textAnchor="middle"
-                className="text-xs font-semibold fill-blue-800 font-mono select-none"
-              >
-                S={formatFloat(calc.triangleArea)}
-              </text>
-            </g>
-          )}
-
-          {/* Interactive Drag Points A and B */}
-          {calc.isValidIntercept && (
-            <g className="points-layer">
-              {/* Point A */}
-              <g className="cursor-ew-resize">
-                <circle cx={pA.x} cy={pA.y} r="16" fill="transparent" data-point="A" />
-                <circle
-                  cx={pA.x}
-                  cy={pA.y}
-                  r="7"
-                  fill="#ffffff"
-                  stroke="#2563eb"
-                  strokeWidth="3"
-                  data-point="A"
-                />
-                <circle cx={pA.x} cy={pA.y} r="3" fill="#2563eb" data-point="A" />
-                <text
-                  x={pA.x}
-                  y={calc.b > 0 ? pA.y + 20 : pA.y - 12}
-                  textAnchor="middle"
-                  className="text-sm font-bold fill-blue-800 font-mono select-none pointer-events-none"
-                >
-                  A({formatFloat(calc.a)}, 0)
-                </text>
-              </g>
-
-              {/* Point B */}
-              <g className="cursor-ns-resize">
-                <circle cx={pB.x} cy={pB.y} r="16" fill="transparent" data-point="B" />
-                <circle
-                  cx={pB.x}
-                  cy={pB.y}
-                  r="7"
-                  fill="#ffffff"
-                  stroke="#2563eb"
-                  strokeWidth="3"
-                  data-point="B"
-                />
-                <circle cx={pB.x} cy={pB.y} r="3" fill="#2563eb" data-point="B" />
-                <text
-                  x={calc.a > 0 ? pB.x - 14 : pB.x + 14}
-                  y={pB.y + 5}
-                  textAnchor={calc.a > 0 ? 'end' : 'start'}
-                  className="text-sm font-bold fill-blue-800 font-mono select-none pointer-events-none"
-                >
-                  B(0, {formatFloat(calc.b)})
-                </text>
-              </g>
             </g>
           )}
         </svg>
@@ -615,7 +707,9 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
             <span>
               {t.canvas.lineLegend}{' '}
               <span className="font-mono font-semibold text-slate-900">
-                x/{calc.a} + y/{calc.b} = 1
+                {calc.kind === 'intercept'
+                  ? `x/${calc.a} + y/${calc.b} = 1`
+                  : calc.generalForm.latex}
               </span>
             </span>
           </div>
@@ -628,15 +722,17 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
               </span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-3.5 h-3.5 bg-blue-100 border border-blue-400 inline-block rounded-xs" />
-            <span>
-              {t.canvas.areaLegend}{' '}
-              <span className="font-mono font-semibold text-slate-900">
-                S = {formatFloat(calc.triangleArea)}
+          {calc.kind === 'intercept' && (
+            <div className="flex items-center gap-2">
+              <span className="w-3.5 h-3.5 bg-blue-100 border border-blue-400 inline-block rounded-xs" />
+              <span>
+                {t.canvas.areaLegend}{' '}
+                <span className="font-mono font-semibold text-slate-900">
+                  S = {formatFloat(calc.triangleArea)}
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

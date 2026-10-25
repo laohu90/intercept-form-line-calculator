@@ -15,9 +15,10 @@ import { MathView } from './MathView';
 import {
   parseNumberOrFraction,
   LineCalculations,
-  twoPointsToIntercepts,
-  generalFormToIntercepts,
-  pointSlopeToIntercepts,
+  solveFromTwoPoints,
+  solveFromGeneralForm,
+  solveFromPointSlope,
+  computeInvalidLine,
 } from '../utils/mathUtils';
 import { Language, translations } from '../utils/i18n';
 
@@ -26,6 +27,7 @@ interface InputPanelProps {
   b: number;
   calc: LineCalculations;
   onChange: (a: number, b: number) => void;
+  onLineCalcChange?: (calc: LineCalculations) => void;
   language: Language;
   searchKeyword: string;
   onSearchChange: (keyword: string) => void;
@@ -213,6 +215,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   b,
   calc,
   onChange,
+  onLineCalcChange,
   language,
   searchKeyword,
   onSearchChange,
@@ -225,6 +228,8 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   // Direct inputs
   const [inputA, setInputA] = useState(a.toString());
   const [inputB, setInputB] = useState(b.toString());
+  const [errorA, setErrorA] = useState<string | null>(null);
+  const [errorB, setErrorB] = useState<string | null>(null);
 
   // Two points inputs
   const [p1x, setP1x] = useState('3');
@@ -246,93 +251,160 @@ export const InputPanel: React.FC<InputPanelProps> = ({
   const [copiedType, setCopiedType] = useState<'latex' | 'eq' | null>(null);
 
   useEffect(() => {
-    setInputA(a.toString());
+    if (!isNaN(a)) {
+      setInputA(a.toString());
+      setErrorA(null);
+    }
   }, [a]);
 
   useEffect(() => {
-    setInputB(b.toString());
+    if (!isNaN(b)) {
+      setInputB(b.toString());
+      setErrorB(null);
+    }
   }, [b]);
 
   const handleApplyA = (valStr: string) => {
     setInputA(valStr);
+    if (!valStr.trim()) {
+      setErrorA(t.validation.emptyA);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.validation.emptyA));
+      }
+      return;
+    }
     const parsed = parseNumberOrFraction(valStr);
     if (!parsed.isValid) {
-      setErrorMsg('Invalid input for a');
+      setErrorA(t.input.invalidWarning);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      }
       return;
     }
     if (Math.abs(parsed.value) < 1e-6) {
-      setErrorMsg(t.input.invalidWarning);
+      setErrorA(t.input.invalidWarning);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      }
       return;
     }
+    setErrorA(null);
     setErrorMsg(null);
-    onChange(parsed.value, b);
+    onChange(parsed.value, isNaN(b) ? 1 : b);
   };
 
   const handleApplyB = (valStr: string) => {
     setInputB(valStr);
+    if (!valStr.trim()) {
+      setErrorB(t.validation.emptyB);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.validation.emptyB));
+      }
+      return;
+    }
     const parsed = parseNumberOrFraction(valStr);
     if (!parsed.isValid) {
-      setErrorMsg('Invalid input for b');
+      setErrorB(t.input.invalidWarning);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      }
       return;
     }
     if (Math.abs(parsed.value) < 1e-6) {
-      setErrorMsg(t.input.invalidWarning);
+      setErrorB(t.input.invalidWarning);
+      if (onLineCalcChange) {
+        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      }
       return;
     }
+    setErrorB(null);
     setErrorMsg(null);
-    onChange(a, parsed.value);
+    onChange(isNaN(a) ? 1 : a, parsed.value);
   };
 
   const handleSolveTwoPoints = () => {
+    if (!p1x.trim() || !p1y.trim() || !p2x.trim() || !p2y.trim()) {
+      setErrorMsg(t.validation.emptyPoints);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
+      return;
+    }
     const p1xP = parseNumberOrFraction(p1x).value;
     const p1yP = parseNumberOrFraction(p1y).value;
     const p2xP = parseNumberOrFraction(p2x).value;
     const p2yP = parseNumberOrFraction(p2y).value;
     if (isNaN(p1xP) || isNaN(p1yP) || isNaN(p2xP) || isNaN(p2yP)) {
-      setErrorMsg('Please enter valid numeric coordinates for both points.');
+      setErrorMsg(t.validation.emptyPoints);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
       return;
     }
-    const res = twoPointsToIntercepts(p1xP, p1yP, p2xP, p2yP);
+    const res = solveFromTwoPoints(p1xP, p1yP, p2xP, p2yP);
     if (!res.isValid) {
       setErrorMsg(res.error || t.input.invalidWarning);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(res.error || t.input.invalidWarning));
       return;
     }
     setErrorMsg(null);
-    onChange(res.a, res.b);
+    if (onLineCalcChange) {
+      onLineCalcChange(res.lineCalc);
+    } else if (res.lineCalc.isValidIntercept) {
+      onChange(res.lineCalc.a, res.lineCalc.b);
+    }
   };
 
   const handleSolveGeneralForm = () => {
+    if (!genA.trim() || !genB.trim() || !genC.trim()) {
+      setErrorMsg(t.validation.emptyGeneral);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyGeneral));
+      return;
+    }
     const aVal = parseNumberOrFraction(genA).value;
     const bVal = parseNumberOrFraction(genB).value;
     const cVal = parseNumberOrFraction(genC).value;
     if (isNaN(aVal) || isNaN(bVal) || isNaN(cVal)) {
-      setErrorMsg('Please enter valid numbers for A, B, and C.');
+      setErrorMsg(t.validation.emptyGeneral);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyGeneral));
       return;
     }
-    const res = generalFormToIntercepts(aVal, bVal, cVal);
+    const res = solveFromGeneralForm(aVal, bVal, cVal);
     if (!res.isValid) {
       setErrorMsg(res.error || t.input.invalidWarning);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(res.error || t.input.invalidWarning));
       return;
     }
     setErrorMsg(null);
-    onChange(res.a, res.b);
+    if (onLineCalcChange) {
+      onLineCalcChange(res.lineCalc);
+    } else if (res.lineCalc.isValidIntercept) {
+      onChange(res.lineCalc.a, res.lineCalc.b);
+    }
   };
 
   const handleSolvePointSlope = () => {
+    if (!psX.trim() || !psY.trim() || !psK.trim()) {
+      setErrorMsg(t.validation.emptyPoints);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
+      return;
+    }
     const x0 = parseNumberOrFraction(psX).value;
     const y0 = parseNumberOrFraction(psY).value;
     const kVal = parseNumberOrFraction(psK).value;
     if (isNaN(x0) || isNaN(y0) || isNaN(kVal)) {
-      setErrorMsg('Please enter valid numbers for point and slope.');
+      setErrorMsg(t.validation.emptyPoints);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
       return;
     }
-    const res = pointSlopeToIntercepts(x0, y0, kVal);
+    const res = solveFromPointSlope(x0, y0, kVal);
     if (!res.isValid) {
       setErrorMsg(res.error || t.input.invalidWarning);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(res.error || t.input.invalidWarning));
       return;
     }
     setErrorMsg(null);
-    onChange(res.a, res.b);
+    if (onLineCalcChange) {
+      onLineCalcChange(res.lineCalc);
+    } else if (res.lineCalc.isValidIntercept) {
+      onChange(res.lineCalc.a, res.lineCalc.b);
+    }
   };
 
   const stepA = (delta: number) => {
@@ -479,16 +551,28 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono font-bold text-slate-500">a =</span>
-              <input
-                id="param-a-input"
-                type="text"
-                value={inputA}
-                onChange={(e) => handleApplyA(e.target.value)}
-                placeholder="e.g. 3 or 2/3"
-                className="flex-1 bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-base font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800"
-              />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono font-bold text-slate-500">a =</span>
+                <input
+                  id="param-a-input"
+                  type="text"
+                  value={inputA}
+                  onChange={(e) => handleApplyA(e.target.value)}
+                  placeholder="e.g. 3 or 2/3"
+                  className={`flex-1 rounded-lg px-3.5 py-2 text-base font-mono transition-colors focus:outline-none focus:ring-2 ${
+                    errorA
+                      ? 'bg-rose-50/40 border border-rose-300 text-rose-900 focus:ring-rose-200 focus:border-rose-500'
+                      : 'bg-white border border-slate-300 text-slate-900 focus:ring-slate-900/10 focus:border-slate-800'
+                  }`}
+                />
+              </div>
+              {errorA && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-600 font-medium pl-7">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errorA}</span>
+                </div>
+              )}
             </div>
 
             {/* Slider */}
@@ -496,7 +580,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               <div className="flex justify-between text-xs text-slate-400 font-mono">
                 <span>-10</span>
                 <span className="font-semibold text-slate-700">
-                  {t.input.sliderA} {a}
+                  {t.input.sliderA} {isNaN(a) ? '--' : a}
                 </span>
                 <span>10</span>
               </div>
@@ -505,12 +589,13 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 min="-10"
                 max="10"
                 step="0.5"
-                value={a}
+                value={isNaN(a) ? 0 : a}
                 aria-label={t.input.paramA}
                 onChange={(e) => {
                   let v = parseFloat(e.target.value);
                   if (Math.abs(v) < 0.25) v = v >= 0 ? 0.5 : -0.5;
-                  onChange(v, b);
+                  setErrorA(null);
+                  onChange(v, isNaN(b) ? 1 : b);
                 }}
                 className="w-full accent-slate-900 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
               />
@@ -549,16 +634,28 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono font-bold text-slate-500">b =</span>
-              <input
-                id="param-b-input"
-                type="text"
-                value={inputB}
-                onChange={(e) => handleApplyB(e.target.value)}
-                placeholder="e.g. 4 or -5/2"
-                className="flex-1 bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-base font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800"
-              />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-mono font-bold text-slate-500">b =</span>
+                <input
+                  id="param-b-input"
+                  type="text"
+                  value={inputB}
+                  onChange={(e) => handleApplyB(e.target.value)}
+                  placeholder="e.g. 4 or -5/2"
+                  className={`flex-1 rounded-lg px-3.5 py-2 text-base font-mono transition-colors focus:outline-none focus:ring-2 ${
+                    errorB
+                      ? 'bg-rose-50/40 border border-rose-300 text-rose-900 focus:ring-rose-200 focus:border-rose-500'
+                      : 'bg-white border border-slate-300 text-slate-900 focus:ring-slate-900/10 focus:border-slate-800'
+                  }`}
+                />
+              </div>
+              {errorB && (
+                <div className="flex items-center gap-1.5 text-xs text-rose-600 font-medium pl-7">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{errorB}</span>
+                </div>
+              )}
             </div>
 
             {/* Slider */}
@@ -566,7 +663,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               <div className="flex justify-between text-xs text-slate-400 font-mono">
                 <span>-10</span>
                 <span className="font-semibold text-slate-700">
-                  {t.input.sliderB} {b}
+                  {t.input.sliderB} {isNaN(b) ? '--' : b}
                 </span>
                 <span>10</span>
               </div>
@@ -575,12 +672,13 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 min="-10"
                 max="10"
                 step="0.5"
-                value={b}
+                value={isNaN(b) ? 0 : b}
                 aria-label={t.input.paramB}
                 onChange={(e) => {
                   let v = parseFloat(e.target.value);
                   if (Math.abs(v) < 0.25) v = v >= 0 ? 0.5 : -0.5;
-                  onChange(a, v);
+                  setErrorB(null);
+                  onChange(isNaN(a) ? 1 : a, v);
                 }}
                 className="w-full accent-slate-900 cursor-pointer h-2 bg-slate-200 rounded-lg appearance-none"
               />

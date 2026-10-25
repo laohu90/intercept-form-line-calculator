@@ -5,10 +5,11 @@ import CoordinateBoard from './components/CoordinateBoard';
 import SolutionSteps from './components/SolutionSteps';
 import CompletingSquareMethod from './components/CompletingSquareMethod';
 import PitfallsAndRules from './components/PitfallsAndRules';
+import { TrustModals, ModalType } from './components/TrustModals';
 import { MathView } from './components/MathView';
-import { computeLineDetails, formatFloat } from './utils/mathUtils';
+import { computeLineDetails, formatFloat, LineCalculations } from './utils/mathUtils';
 import { Language, translations } from './utils/i18n';
-import { Compass, BookOpenCheck, Layers, Calculator, Sparkles } from 'lucide-react';
+import { Compass, BookOpenCheck, Layers, Calculator, Sparkles, ShieldCheck, Mail, Info, FileText } from 'lucide-react';
 
 export default function App() {
   // Default language is English as required by the user prompt ("默认英语"), with URL query param support for SEO
@@ -37,20 +38,34 @@ export default function App() {
     }
   };
 
-  // Default parameters: 3, 4
+  // Parameters
   const [a, setA] = useState<number>(3);
   const [b, setB] = useState<number>(4);
+  const [customCalc, setCustomCalc] = useState<LineCalculations | null>(null);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [activeSection, setActiveSection] = useState<string>('calculator');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
   const t = translations[language];
 
-  // Compute all line details
-  const calc = useMemo(() => computeLineDetails(a, b), [a, b]);
+  // Compute all line details (uses customCalc if set, e.g. for vertical lines or invalid inputs)
+  const calc = useMemo(() => {
+    if (customCalc) return customCalc;
+    return computeLineDetails(a, b);
+  }, [a, b, customCalc]);
 
   const handleUpdateIntercepts = (newA: number, newB: number) => {
+    setCustomCalc(null);
     setA(newA);
     setB(newB);
+  };
+
+  const handleLineCalcChange = (newCalc: LineCalculations) => {
+    setCustomCalc(newCalc);
+    if (newCalc.kind === 'intercept') {
+      setA(newCalc.a);
+      setB(newCalc.b);
+    }
   };
 
   const handlePrint = () => {
@@ -118,12 +133,14 @@ export default function App() {
         </div>
 
         {/* Quick KPI Strip / Mathematical Metric Cards (Enlarged Fonts) */}
-        {calc.isValidIntercept && (
+        {calc.kind !== 'invalid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/60 shadow-2xs">
-              <span className="text-xs text-slate-500 font-medium block">{t.metrics.interceptEq}</span>
+              <span className="text-xs text-slate-500 font-medium block">
+                {calc.kind === 'intercept' ? t.metrics.interceptEq : 'Equation'}
+              </span>
               <div className="text-sm sm:text-base font-mono font-bold text-slate-900 truncate mt-1.5">
-                <MathView math={calc.interceptLatex} />
+                <MathView math={calc.interceptLatex || calc.generalForm.latex} />
               </div>
             </div>
 
@@ -137,14 +154,14 @@ export default function App() {
             <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/60 shadow-2xs">
               <span className="text-xs text-slate-500 font-medium block">{t.metrics.slopeAndAngle}</span>
               <div className="text-sm sm:text-base font-mono font-bold text-slate-900 truncate mt-1.5">
-                k={calc.slopeIntercept.kLatex} · {calc.inclinationLatex}
+                {calc.kind === 'vertical' ? 'k=Undefined · 90°' : `k=${calc.slopeIntercept.kLatex} · ${calc.inclinationLatex}`}
               </div>
             </div>
 
             <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 bg-slate-50/60 shadow-2xs">
               <span className="text-xs text-slate-500 font-medium block">{t.metrics.chordLength}</span>
               <div className="text-sm sm:text-base font-mono font-bold text-slate-900 truncate mt-1.5">
-                {formatFloat(calc.segmentLength)}
+                {isNaN(calc.segmentLength) ? '—' : formatFloat(calc.segmentLength)}
               </div>
             </div>
 
@@ -162,6 +179,11 @@ export default function App() {
               </div>
             </div>
           </div>
+        ) : (
+          <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/70 text-amber-900 text-xs sm:text-sm font-medium flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{calc.errorMessage || t.validation.emptyA}</span>
+          </div>
         )}
 
         {/* Input Panel with Multi-Mode Solvers and Search Filter */}
@@ -171,6 +193,7 @@ export default function App() {
             b={b}
             calc={calc}
             onChange={handleUpdateIntercepts}
+            onLineCalcChange={handleLineCalcChange}
             language={language}
             searchKeyword={searchKeyword}
             onSearchChange={setSearchKeyword}
@@ -187,7 +210,11 @@ export default function App() {
                 <span>{t.canvas.title}</span>
               </h2>
               <span className="text-xs sm:text-sm text-slate-500 font-mono">
-                A({a}, 0) · B(0, {b})
+                {calc.kind === 'vertical'
+                  ? `x = ${calc.specialConstant ?? calc.a}`
+                  : calc.kind === 'horizontal'
+                  ? `y = ${calc.specialConstant ?? calc.b}`
+                  : `A(${isNaN(a) ? '?' : a}, 0) · B(0, ${isNaN(b) ? '?' : b})`}
               </span>
             </div>
             <CoordinateBoard
@@ -206,10 +233,12 @@ export default function App() {
           </section>
         </div>
 
-        {/* Completing the Square Method (Deep Dive) */}
-        <section id="completing-square" className="print-avoid-break">
-          <CompletingSquareMethod calc={calc} language={language} />
-        </section>
+        {/* Completing the Square Method (Deep Dive for Intercept Form Lines) */}
+        {calc.kind === 'intercept' && (
+          <section id="completing-square" className="print-avoid-break">
+            <CompletingSquareMethod calc={calc} language={language} />
+          </section>
+        )}
 
         {/* Student Pitfalls & Rules */}
         <section id="pitfalls" className="print-avoid-break">
@@ -217,21 +246,103 @@ export default function App() {
         </section>
       </main>
 
-      {/* Clean Minimalist Footer */}
-      <footer className="no-print border-t border-slate-200 mt-14 py-8 bg-white text-xs sm:text-sm text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-slate-800">{t.appName}</span>
-            <span aria-hidden="true">·</span>
-            <span>{t.footer.desc}</span>
+      {/* Comprehensive E-E-A-T Footer with About, Privacy, Terms, Contact & Methodology Modals */}
+      <footer className="no-print border-t border-slate-200 mt-14 bg-white text-xs sm:text-sm text-slate-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Col 1: Brand & Academic Mission */}
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
+                <span className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-mono font-bold shadow-2xs">
+                  x/a
+                </span>
+                <span>{t.appName}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-md">
+                {t.appDescription}
+              </p>
+              <div className="flex items-center gap-2 text-xs text-indigo-700 bg-indigo-50/70 border border-indigo-100 rounded-lg p-2.5 max-w-md">
+                <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                <span>{t.trust.authorBio}</span>
+              </div>
+            </div>
+
+            {/* Col 2: Legal & Academic Trust Links */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                {t.trust.about}
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
+                <li>
+                  <button
+                    onClick={() => setActiveModal('about')}
+                    className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Info className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{t.trust.about}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveModal('privacy')}
+                    className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{t.trust.privacy}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveModal('terms')}
+                    className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{t.trust.terms}</span>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => setActiveModal('contact')}
+                    className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <span>{t.trust.contact}</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Academic Standards & Features */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                Standards
+              </h3>
+              <ul className="space-y-2 text-xs text-slate-500">
+                <li>• {t.footer.standard}</li>
+                <li>• {t.footer.latexRendering}</li>
+                <li>• {t.footer.pdfExport}</li>
+                <li>• Zero-Server Data Storage</li>
+              </ul>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-slate-400">
-            <span>{t.footer.standard}</span>
-            <span>{t.footer.latexRendering}</span>
-            <span>{t.footer.pdfExport}</span>
+
+          <div className="border-t border-slate-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div>
+              © {new Date().getFullYear()} Formula CalcKit. All rights reserved.
+            </div>
+            <div className="flex items-center gap-4">
+              <span>https://intercept-form-line-calculator.formulacalckit.com</span>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Trust & Academic Policy Modals */}
+      <TrustModals
+        type={activeModal}
+        onClose={() => setActiveModal(null)}
+        language={language}
+      />
     </div>
   );
 }
