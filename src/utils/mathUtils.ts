@@ -531,6 +531,105 @@ export function computeInvalidLine(errorMessage: string = 'Please enter valid no
   };
 }
 
+// Compute dedicated zero-intercept error state (a=0 or b=0)
+export function computeZeroIntercept(
+  a: number,
+  b: number,
+  zeroField: 'a' | 'b' | 'both' = 'a',
+  customMessage?: string
+): LineCalculations {
+  let msg = customMessage;
+  if (!msg) {
+    if (zeroField === 'both' || (Math.abs(a) < 1e-7 && Math.abs(b) < 1e-7)) {
+      msg = 'Both intercepts are 0 (a = 0, b = 0). The line passes through the origin O(0,0). Intercept form x/0 + y/0 = 1 is mathematically undefined due to division by zero. Use y = kx.';
+    } else if (zeroField === 'a' || Math.abs(a) < 1e-7) {
+      msg = `x-intercept a cannot be 0. Division by zero (x/0) is undefined. A line with x-intercept 0 passes through the origin (0,0); intercept form cannot be written.`;
+    } else {
+      msg = `y-intercept b cannot be 0. Division by zero (y/0) is undefined. Intercept form cannot be written.`;
+    }
+  }
+
+  return {
+    kind: 'invalid',
+    a,
+    b,
+    aRat: toRational(isNaN(a) ? 0 : a),
+    bRat: toRational(isNaN(b) ? 0 : b),
+    isValidIntercept: false,
+    errorMessage: msg,
+    interceptLatex: '',
+    generalForm: {
+      A: Math.abs(a) < 1e-7 ? 1 : 0,
+      B: Math.abs(b) < 1e-7 ? 1 : 0,
+      C: 0,
+      latex: Math.abs(a) < 1e-7 ? 'x = 0' : 'y = 0',
+    },
+    slopeIntercept: {
+      k: NaN,
+      kLatex: '\\text{Undefined}',
+      bLatex: '0',
+      latex: Math.abs(a) < 1e-7 ? 'x = 0' : 'y = 0',
+    },
+    slope: NaN,
+    inclinationDeg: Math.abs(a) < 1e-7 ? 90 : 0,
+    inclinationRad: Math.abs(a) < 1e-7 ? Math.PI / 2 : 0,
+    inclinationLatex: Math.abs(a) < 1e-7 ? '90^\\circ' : '0^\\circ',
+    segmentLength: NaN,
+    segmentLengthLatex: '—',
+    triangleArea: 0,
+    triangleAreaLatex: '0',
+    originDistance: 0,
+    originDistanceLatex: '0',
+    footOfPerpendicular: { x: 0, y: 0, xLatex: '0', yLatex: '0' },
+    quadrants: [],
+    missedQuadrant: 0,
+    isPythagorean: false,
+    isIsoscelesRightTriangle: false,
+    isOppositeIntercepts: false,
+  };
+}
+
+// Compute dedicated empty input state
+export function computeEmptyInput(
+  field: 'a' | 'b' | 'both',
+  customMessage?: string
+): LineCalculations {
+  const msg = customMessage || (field === 'both'
+    ? 'Please enter numerical values for intercepts a and b.'
+    : field === 'a'
+    ? 'x-intercept a cannot be empty. Please enter a non-zero number or fraction.'
+    : 'y-intercept b cannot be empty. Please enter a non-zero number or fraction.');
+
+  return {
+    kind: 'invalid',
+    a: NaN,
+    b: NaN,
+    aRat: { numerator: 0, denominator: 1 },
+    bRat: { numerator: 0, denominator: 1 },
+    isValidIntercept: false,
+    errorMessage: msg,
+    interceptLatex: '',
+    generalForm: { A: 0, B: 0, C: 0, latex: '' },
+    slopeIntercept: { k: NaN, kLatex: '', bLatex: '', latex: '' },
+    slope: NaN,
+    inclinationDeg: NaN,
+    inclinationRad: NaN,
+    inclinationLatex: '',
+    segmentLength: NaN,
+    segmentLengthLatex: '',
+    triangleArea: NaN,
+    triangleAreaLatex: '',
+    originDistance: NaN,
+    originDistanceLatex: '',
+    footOfPerpendicular: { x: NaN, y: NaN, xLatex: '', yLatex: '' },
+    quadrants: [],
+    missedQuadrant: 0,
+    isPythagorean: false,
+    isIsoscelesRightTriangle: false,
+    isOppositeIntercepts: false,
+  };
+}
+
 // Convert Two Points to Intercepts with full special line detection
 export function solveFromTwoPoints(
   x1: number,

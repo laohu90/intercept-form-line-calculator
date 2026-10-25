@@ -19,6 +19,9 @@ import {
   solveFromGeneralForm,
   solveFromPointSlope,
   computeInvalidLine,
+  computeZeroIntercept,
+  computeEmptyInput,
+  formatFloat,
 } from '../utils/mathUtils';
 import { Language, translations } from '../utils/i18n';
 
@@ -269,7 +272,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     if (!valStr.trim()) {
       setErrorA(t.validation.emptyA);
       if (onLineCalcChange) {
-        onLineCalcChange(computeInvalidLine(t.validation.emptyA));
+        onLineCalcChange(computeEmptyInput('a', t.validation.emptyA));
       }
       return;
     }
@@ -282,15 +285,36 @@ export const InputPanel: React.FC<InputPanelProps> = ({
       return;
     }
     if (Math.abs(parsed.value) < 1e-6) {
-      setErrorA(t.input.invalidWarning);
+      setErrorA(t.validation.zeroA);
+      const parsedB = parseNumberOrFraction(inputB);
+      const bVal = parsedB.isValid ? parsedB.value : 0;
       if (onLineCalcChange) {
-        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+        onLineCalcChange(computeZeroIntercept(0, bVal, 'a', t.validation.zeroA));
       }
       return;
     }
     setErrorA(null);
     setErrorMsg(null);
-    onChange(parsed.value, isNaN(b) ? 1 : b);
+
+    // Validate partner inputB before applying
+    const parsedB = parseNumberOrFraction(inputB);
+    if (!inputB.trim()) {
+      setErrorB(t.validation.emptyB);
+      if (onLineCalcChange) onLineCalcChange(computeEmptyInput('b', t.validation.emptyB));
+      return;
+    }
+    if (!parsedB.isValid) {
+      setErrorB(t.input.invalidWarning);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      return;
+    }
+    if (Math.abs(parsedB.value) < 1e-6) {
+      setErrorB(t.validation.zeroB);
+      if (onLineCalcChange) onLineCalcChange(computeZeroIntercept(parsed.value, 0, 'b', t.validation.zeroB));
+      return;
+    }
+    setErrorB(null);
+    onChange(parsed.value, parsedB.value);
   };
 
   const handleApplyB = (valStr: string) => {
@@ -298,7 +322,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     if (!valStr.trim()) {
       setErrorB(t.validation.emptyB);
       if (onLineCalcChange) {
-        onLineCalcChange(computeInvalidLine(t.validation.emptyB));
+        onLineCalcChange(computeEmptyInput('b', t.validation.emptyB));
       }
       return;
     }
@@ -311,27 +335,48 @@ export const InputPanel: React.FC<InputPanelProps> = ({
       return;
     }
     if (Math.abs(parsed.value) < 1e-6) {
-      setErrorB(t.input.invalidWarning);
+      setErrorB(t.validation.zeroB);
+      const parsedA = parseNumberOrFraction(inputA);
+      const aVal = parsedA.isValid ? parsedA.value : 0;
       if (onLineCalcChange) {
-        onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+        onLineCalcChange(computeZeroIntercept(aVal, 0, 'b', t.validation.zeroB));
       }
       return;
     }
     setErrorB(null);
     setErrorMsg(null);
-    onChange(isNaN(a) ? 1 : a, parsed.value);
-  };
 
-  const handleSolveTwoPoints = () => {
-    if (!p1x.trim() || !p1y.trim() || !p2x.trim() || !p2y.trim()) {
-      setErrorMsg(t.validation.emptyPoints);
-      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
+    // Validate partner inputA before applying
+    const parsedA = parseNumberOrFraction(inputA);
+    if (!inputA.trim()) {
+      setErrorA(t.validation.emptyA);
+      if (onLineCalcChange) onLineCalcChange(computeEmptyInput('a', t.validation.emptyA));
       return;
     }
-    const p1xP = parseNumberOrFraction(p1x).value;
-    const p1yP = parseNumberOrFraction(p1y).value;
-    const p2xP = parseNumberOrFraction(p2x).value;
-    const p2yP = parseNumberOrFraction(p2y).value;
+    if (!parsedA.isValid) {
+      setErrorA(t.input.invalidWarning);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.input.invalidWarning));
+      return;
+    }
+    if (Math.abs(parsedA.value) < 1e-6) {
+      setErrorA(t.validation.zeroA);
+      if (onLineCalcChange) onLineCalcChange(computeZeroIntercept(0, parsed.value, 'a', t.validation.zeroA));
+      return;
+    }
+    setErrorA(null);
+    onChange(parsedA.value, parsed.value);
+  };
+
+  const executeTwoPointsSolve = (px1: string, py1: string, px2: string, py2: string) => {
+    if (!px1.trim() || !py1.trim() || !px2.trim() || !py2.trim()) {
+      setErrorMsg(t.validation.emptyPoints);
+      if (onLineCalcChange) onLineCalcChange(computeEmptyInput('both', t.validation.emptyPoints));
+      return;
+    }
+    const p1xP = parseNumberOrFraction(px1).value;
+    const p1yP = parseNumberOrFraction(py1).value;
+    const p2xP = parseNumberOrFraction(px2).value;
+    const p2yP = parseNumberOrFraction(py2).value;
     if (isNaN(p1xP) || isNaN(p1yP) || isNaN(p2xP) || isNaN(p2yP)) {
       setErrorMsg(t.validation.emptyPoints);
       if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
@@ -346,20 +391,22 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     setErrorMsg(null);
     if (onLineCalcChange) {
       onLineCalcChange(res.lineCalc);
-    } else if (res.lineCalc.isValidIntercept) {
-      onChange(res.lineCalc.a, res.lineCalc.b);
     }
   };
 
-  const handleSolveGeneralForm = () => {
-    if (!genA.trim() || !genB.trim() || !genC.trim()) {
+  const handleSolveTwoPoints = () => {
+    executeTwoPointsSolve(p1x, p1y, p2x, p2y);
+  };
+
+  const executeGeneralFormSolve = (ga: string, gb: string, gc: string) => {
+    if (!ga.trim() || !gb.trim() || !gc.trim()) {
       setErrorMsg(t.validation.emptyGeneral);
-      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyGeneral));
+      if (onLineCalcChange) onLineCalcChange(computeEmptyInput('both', t.validation.emptyGeneral));
       return;
     }
-    const aVal = parseNumberOrFraction(genA).value;
-    const bVal = parseNumberOrFraction(genB).value;
-    const cVal = parseNumberOrFraction(genC).value;
+    const aVal = parseNumberOrFraction(ga).value;
+    const bVal = parseNumberOrFraction(gb).value;
+    const cVal = parseNumberOrFraction(gc).value;
     if (isNaN(aVal) || isNaN(bVal) || isNaN(cVal)) {
       setErrorMsg(t.validation.emptyGeneral);
       if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyGeneral));
@@ -374,20 +421,22 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     setErrorMsg(null);
     if (onLineCalcChange) {
       onLineCalcChange(res.lineCalc);
-    } else if (res.lineCalc.isValidIntercept) {
-      onChange(res.lineCalc.a, res.lineCalc.b);
     }
   };
 
-  const handleSolvePointSlope = () => {
-    if (!psX.trim() || !psY.trim() || !psK.trim()) {
+  const handleSolveGeneralForm = () => {
+    executeGeneralFormSolve(genA, genB, genC);
+  };
+
+  const executePointSlopeSolve = (xVal: string, yVal: string, kValStr: string) => {
+    if (!xVal.trim() || !yVal.trim() || !kValStr.trim()) {
       setErrorMsg(t.validation.emptyPoints);
-      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
+      if (onLineCalcChange) onLineCalcChange(computeEmptyInput('both', t.validation.emptyPoints));
       return;
     }
-    const x0 = parseNumberOrFraction(psX).value;
-    const y0 = parseNumberOrFraction(psY).value;
-    const kVal = parseNumberOrFraction(psK).value;
+    const x0 = parseNumberOrFraction(xVal).value;
+    const y0 = parseNumberOrFraction(yVal).value;
+    const kVal = parseNumberOrFraction(kValStr).value;
     if (isNaN(x0) || isNaN(y0) || isNaN(kVal)) {
       setErrorMsg(t.validation.emptyPoints);
       if (onLineCalcChange) onLineCalcChange(computeInvalidLine(t.validation.emptyPoints));
@@ -402,8 +451,24 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     setErrorMsg(null);
     if (onLineCalcChange) {
       onLineCalcChange(res.lineCalc);
-    } else if (res.lineCalc.isValidIntercept) {
-      onChange(res.lineCalc.a, res.lineCalc.b);
+    }
+  };
+
+  const handleSolvePointSlope = () => {
+    executePointSlopeSolve(psX, psY, psK);
+  };
+
+  const handleModeChange = (newMode: InputMode) => {
+    setMode(newMode);
+    setErrorMsg(null);
+    if (newMode === 'intercepts') {
+      handleApplyA(inputA);
+    } else if (newMode === 'twoPoints') {
+      executeTwoPointsSolve(p1x, p1y, p2x, p2y);
+    } else if (newMode === 'generalForm') {
+      executeGeneralFormSolve(genA, genB, genC);
+    } else if (newMode === 'pointSlope') {
+      executePointSlopeSolve(psX, psY, psK);
     }
   };
 
@@ -471,7 +536,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">
           <button
-            onClick={() => setMode('intercepts')}
+            onClick={() => handleModeChange('intercepts')}
             className={`px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap ${
               mode === 'intercepts' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'hover:text-slate-900'
             }`}
@@ -479,7 +544,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             {t.modes.intercepts}
           </button>
           <button
-            onClick={() => setMode('twoPoints')}
+            onClick={() => handleModeChange('twoPoints')}
             className={`px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap ${
               mode === 'twoPoints' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'hover:text-slate-900'
             }`}
@@ -487,7 +552,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             {t.modes.twoPoints}
           </button>
           <button
-            onClick={() => setMode('generalForm')}
+            onClick={() => handleModeChange('generalForm')}
             className={`px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap ${
               mode === 'generalForm' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'hover:text-slate-900'
             }`}
@@ -495,7 +560,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             {t.modes.generalForm}
           </button>
           <button
-            onClick={() => setMode('pointSlope')}
+            onClick={() => handleModeChange('pointSlope')}
             className={`px-3 py-1.5 rounded-md transition-all cursor-pointer whitespace-nowrap ${
               mode === 'pointSlope' ? 'bg-white text-slate-900 shadow-2xs font-semibold' : 'hover:text-slate-900'
             }`}
@@ -700,8 +765,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p1x-input"
                 type="text"
                 value={p1x}
-                onChange={(e) => setP1x(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setP1x(e.target.value);
+                  executeTwoPointsSolve(e.target.value, p1y, p2x, p2y);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -710,8 +778,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p1y-input"
                 type="text"
                 value={p1y}
-                onChange={(e) => setP1y(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setP1y(e.target.value);
+                  executeTwoPointsSolve(p1x, e.target.value, p2x, p2y);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -720,8 +791,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p2x-input"
                 type="text"
                 value={p2x}
-                onChange={(e) => setP2x(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setP2x(e.target.value);
+                  executeTwoPointsSolve(p1x, p1y, e.target.value, p2y);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -730,17 +804,27 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p2y-input"
                 type="text"
                 value={p2y}
-                onChange={(e) => setP2y(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setP2y(e.target.value);
+                  executeTwoPointsSolve(p1x, p1y, p2x, e.target.value);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
           </div>
-          <button
-            onClick={handleSolveTwoPoints}
-            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            Compute Intercepts from Two Points
-          </button>
+
+          {/* Real-time deduction feedback inside tab */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+            <button
+              onClick={handleSolveTwoPoints}
+              className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Compute Intercepts from Two Points
+            </button>
+            <div className="text-xs text-slate-500 font-mono">
+              P₁({p1x || '?'}, {p1y || '?'}) · P₂({p2x || '?'}, {p2y || '?'})
+            </div>
+          </div>
         </div>
       )}
 
@@ -757,8 +841,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-a-input"
                 type="text"
                 value={genA}
-                onChange={(e) => setGenA(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setGenA(e.target.value);
+                  executeGeneralFormSolve(e.target.value, genB, genC);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -767,8 +854,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-b-input"
                 type="text"
                 value={genB}
-                onChange={(e) => setGenB(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setGenB(e.target.value);
+                  executeGeneralFormSolve(genA, e.target.value, genC);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -777,8 +867,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-c-input"
                 type="text"
                 value={genC}
-                onChange={(e) => setGenC(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setGenC(e.target.value);
+                  executeGeneralFormSolve(genA, genB, e.target.value);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
           </div>
@@ -804,8 +897,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-x-input"
                 type="text"
                 value={psX}
-                onChange={(e) => setPsX(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setPsX(e.target.value);
+                  executePointSlopeSolve(e.target.value, psY, psK);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -814,8 +910,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-y-input"
                 type="text"
                 value={psY}
-                onChange={(e) => setPsY(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setPsY(e.target.value);
+                  executePointSlopeSolve(psX, e.target.value, psK);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
             <div>
@@ -824,8 +923,11 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-k-input"
                 type="text"
                 value={psK}
-                onChange={(e) => setPsK(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                onChange={(e) => {
+                  setPsK(e.target.value);
+                  executePointSlopeSolve(psX, psY, e.target.value);
+                }}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm font-mono focus:border-slate-800 focus:outline-none"
               />
             </div>
           </div>
@@ -838,7 +940,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
         </div>
       )}
 
-      {/* Real-Time Current Equation Status Banner */}
+      {/* Real-Time Current Equation Status Banner (Supports Intercept, Vertical, Horizontal, Origin, and Invalid) */}
       {calc.isValidIntercept ? (
         <div className="p-4 bg-slate-900 text-white rounded-xl flex flex-wrap items-center justify-between gap-4 text-sm shadow-xs">
           <div className="flex flex-wrap items-center gap-3">
@@ -868,10 +970,61 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             </button>
           </div>
         </div>
+      ) : calc.kind === 'vertical' ? (
+        <div className="p-4 bg-blue-900 text-white rounded-xl flex flex-wrap items-center justify-between gap-4 text-sm shadow-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="px-2.5 py-1 rounded bg-blue-700 text-xs font-semibold text-white uppercase tracking-wider">
+              {t.specialLines.verticalBadge}
+            </span>
+            <span className="text-blue-200 font-medium">{t.input.currentEq}</span>
+            <div className="bg-blue-800/95 px-3.5 py-1.5 rounded-lg text-white font-mono text-base font-bold border border-blue-700">
+              <MathView math={`x = ${calc.specialConstant ?? calc.a}`} />
+            </div>
+            <span className="text-xs text-blue-200 font-mono">
+              k = Undefined (不存在), α = 90°
+            </span>
+          </div>
+          <div className="text-xs font-mono text-blue-100 bg-blue-950/60 px-3 py-1.5 rounded-md border border-blue-800">
+            {calc.generalForm.latex}
+          </div>
+        </div>
+      ) : calc.kind === 'horizontal' ? (
+        <div className="p-4 bg-indigo-900 text-white rounded-xl flex flex-wrap items-center justify-between gap-4 text-sm shadow-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="px-2.5 py-1 rounded bg-indigo-700 text-xs font-semibold text-white uppercase tracking-wider">
+              {t.specialLines.horizontalBadge}
+            </span>
+            <span className="text-indigo-200 font-medium">{t.input.currentEq}</span>
+            <div className="bg-indigo-800/95 px-3.5 py-1.5 rounded-lg text-white font-mono text-base font-bold border border-indigo-700">
+              <MathView math={`y = ${calc.specialConstant ?? calc.b}`} />
+            </div>
+            <span className="text-xs text-indigo-200 font-mono">
+              k = 0, α = 0°
+            </span>
+          </div>
+          <div className="text-xs font-mono text-indigo-100 bg-indigo-950/60 px-3 py-1.5 rounded-md border border-indigo-800">
+            {calc.generalForm.latex}
+          </div>
+        </div>
+      ) : calc.kind === 'origin' ? (
+        <div className="p-4 bg-purple-900 text-white rounded-xl flex flex-wrap items-center justify-between gap-4 text-sm shadow-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="px-2.5 py-1 rounded bg-purple-700 text-xs font-semibold text-white uppercase tracking-wider">
+              {t.specialLines.originBadge}
+            </span>
+            <span className="text-purple-200 font-medium">{t.input.currentEq}</span>
+            <div className="bg-purple-800/95 px-3.5 py-1.5 rounded-lg text-white font-mono text-base font-bold border border-purple-700">
+              <MathView math={calc.slopeIntercept.latex || `y = ${calc.slopeIntercept.kLatex}x`} />
+            </div>
+          </div>
+          <div className="text-xs font-mono text-purple-100 bg-purple-950/60 px-3 py-1.5 rounded-md border border-purple-800">
+            {calc.generalForm.latex}
+          </div>
+        </div>
       ) : (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-sm flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-          <span>{errorMsg || calc.errorMessage || t.input.invalidWarning}</span>
+        <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl text-amber-900 text-sm flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <span className="font-medium">{errorMsg || calc.errorMessage || t.input.invalidWarning}</span>
         </div>
       )}
 

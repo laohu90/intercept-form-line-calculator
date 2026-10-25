@@ -38,30 +38,24 @@ export default function App() {
     }
   };
 
-  // Parameters
+  // Central authoritative calculation state (default a=3, b=4)
+  const [calc, setCalc] = useState<LineCalculations>(() => computeLineDetails(3, 4));
   const [a, setA] = useState<number>(3);
   const [b, setB] = useState<number>(4);
-  const [customCalc, setCustomCalc] = useState<LineCalculations | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [activeSection, setActiveSection] = useState<string>('calculator');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
   const t = translations[language];
 
-  // Compute all line details (uses customCalc if set, e.g. for vertical lines or invalid inputs)
-  const calc = useMemo(() => {
-    if (customCalc) return customCalc;
-    return computeLineDetails(a, b);
-  }, [a, b, customCalc]);
-
   const handleUpdateIntercepts = (newA: number, newB: number) => {
-    setCustomCalc(null);
     setA(newA);
     setB(newB);
+    setCalc(computeLineDetails(newA, newB));
   };
 
   const handleLineCalcChange = (newCalc: LineCalculations) => {
-    setCustomCalc(newCalc);
+    setCalc(newCalc);
     if (newCalc.kind === 'intercept') {
       setA(newCalc.a);
       setB(newCalc.b);
@@ -214,7 +208,9 @@ export default function App() {
                   ? `x = ${calc.specialConstant ?? calc.a}`
                   : calc.kind === 'horizontal'
                   ? `y = ${calc.specialConstant ?? calc.b}`
-                  : `A(${isNaN(a) ? '?' : a}, 0) · B(0, ${isNaN(b) ? '?' : b})`}
+                  : calc.kind === 'intercept'
+                  ? `A(${calc.a}, 0) · B(0, ${calc.b})`
+                  : '—'}
               </span>
             </div>
             <CoordinateBoard

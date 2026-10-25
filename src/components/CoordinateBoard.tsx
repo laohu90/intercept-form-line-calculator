@@ -698,6 +698,30 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
               })()}
             </g>
           )}
+
+          {/* 5. Invalid / Warning State Display */}
+          {calc.kind === 'invalid' && (
+            <g className="invalid-state-layer">
+              <rect
+                x={centerX - 190}
+                y={centerY - 30}
+                width={380}
+                height={60}
+                rx={10}
+                fill="#fffbeb"
+                stroke="#f59e0b"
+                strokeWidth="1.5"
+              />
+              <text
+                x={centerX}
+                y={centerY + 5}
+                textAnchor="middle"
+                className="text-xs font-semibold fill-amber-900 select-none"
+              >
+                {calc.errorMessage || t.input.invalidWarning}
+              </text>
+            </g>
+          )}
         </svg>
 
         {/* Legend Overlay */}
@@ -709,19 +733,25 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
               <span className="font-mono font-semibold text-slate-900">
                 {calc.kind === 'intercept'
                   ? `x/${calc.a} + y/${calc.b} = 1`
-                  : calc.generalForm.latex}
+                  : calc.kind === 'vertical'
+                  ? `x = ${calc.specialConstant ?? calc.a}`
+                  : calc.kind === 'horizontal'
+                  ? `y = ${calc.specialConstant ?? calc.b}`
+                  : calc.generalForm.latex || '—'}
               </span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-0.5 bg-orange-500 border-dashed border-b inline-block" />
-            <span>
-              {t.canvas.altitudeLegend}{' '}
-              <span className="font-mono font-semibold text-slate-900">
-                d = {formatFloat(calc.originDistance)}
+          {calc.kind !== 'invalid' && (
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-0.5 bg-orange-500 border-dashed border-b inline-block" />
+              <span>
+                {t.canvas.altitudeLegend}{' '}
+                <span className="font-mono font-semibold text-slate-900">
+                  d = {formatFloat(calc.originDistance)}
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
+          )}
           {calc.kind === 'intercept' && (
             <div className="flex items-center gap-2">
               <span className="w-3.5 h-3.5 bg-blue-100 border border-blue-400 inline-block rounded-xs" />

@@ -192,6 +192,9 @@ export interface TranslationDictionary {
     emptyB: string;
     emptyGeneral: string;
     emptyPoints: string;
+    zeroA: string;
+    zeroB: string;
+    zeroBoth: string;
   };
   trust: {
     about: string;
@@ -425,6 +428,9 @@ export const translations: Record<Language, TranslationDictionary> = {
       emptyB: 'y-intercept b cannot be empty. Please enter a number or fraction.',
       emptyGeneral: 'Coefficients A, B, and C cannot be empty.',
       emptyPoints: 'Point coordinates cannot be empty.',
+      zeroA: 'x-intercept a cannot be 0. Division by zero (x/0) is undefined. Intercept form does not exist.',
+      zeroB: 'y-intercept b cannot be 0. Division by zero (y/0) is undefined. Intercept form does not exist.',
+      zeroBoth: 'Both intercepts cannot be 0. The line passes through the origin (y = kx). Intercept form is undefined.',
     },
     trust: {
       about: 'About Us & Methodology',
@@ -657,6 +663,9 @@ export const translations: Record<Language, TranslationDictionary> = {
       emptyB: 'La ordenada en el origen b no puede estar vacía. Ingrese un número o fracción.',
       emptyGeneral: 'Los coeficientes A, B y C no pueden estar vacíos.',
       emptyPoints: 'Las coordenadas de los puntos no pueden estar vacías.',
+      zeroA: 'La intersección x "a" no puede ser 0. División por cero (x/0) indefinida.',
+      zeroB: 'La intersección y "b" no puede ser 0. División por cero (y/0) indefinida.',
+      zeroBoth: 'Ambas intersecciones no pueden ser 0. La recta pasa por el origen (y = kx).',
     },
     trust: {
       about: 'Quiénes Somos y Metodología',
@@ -889,6 +898,9 @@ export const translations: Record<Language, TranslationDictionary> = {
       emptyB: 'L’ordonnée à l’origine b ne peut pas être vide. Veuillez saisir un nombre ou une fraction.',
       emptyGeneral: 'Les coefficients A, B et C ne peuvent pas être vides.',
       emptyPoints: 'Les coordonnées des points ne peuvent pas être vides.',
+      zeroA: 'L’abscisse à l’origine a ne peut pas être 0. La division par zéro (x/0) n’est pas définie.',
+      zeroB: 'L’ordonnée à l’origine b ne peut pas être 0. La division par zéro (y/0) n’est pas définie.',
+      zeroBoth: 'Les deux intersections ne peuvent être 0. La droite passe par l’origine (y = kx).',
     },
     trust: {
       about: 'À Propos et Méthodologie',
@@ -1121,6 +1133,9 @@ export const translations: Record<Language, TranslationDictionary> = {
       emptyB: 'O intercepto no eixo y (b) não pode ficar vazio. Digite um número ou fração.',
       emptyGeneral: 'Os coeficientes A, B e C não podem ficar vazios.',
       emptyPoints: 'As coordenadas dos pontos não podem ficar vazias.',
+      zeroA: 'O intercepto x (a) não pode ser 0. Divisão por zero (x/0) indefinida.',
+      zeroB: 'O intercepto y (b) não pode ser 0. Divisão por zero (y/0) indefinida.',
+      zeroBoth: 'Ambos os interceptos não podem ser 0. A reta passa pela origem (y = kx).',
     },
     trust: {
       about: 'Sobre Nós e Metodologia',
@@ -1352,6 +1367,9 @@ export const translations: Record<Language, TranslationDictionary> = {
       emptyB: '纵截距 b 不能为空，请输入有效数值或分数。',
       emptyGeneral: '一般式系数 A、B 和 C 均不能为空。',
       emptyPoints: '点坐标数值不能为空。',
+      zeroA: '横截距 a 不能为 0！分母为零 (x/0) 无数学意义，截距式方程不能表示过原点的直线。',
+      zeroB: '纵截距 b 不能为 0！分母为零 (y/0) 无数学意义，截距式方程不能表示过原点的直线。',
+      zeroBoth: '截距不能同时为 0！直线过原点 O(0,0)，截距式无意义，应使用 y = kx。',
     },
     trust: {
       about: '关于我们与学术教研',
