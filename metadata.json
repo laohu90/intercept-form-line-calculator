@@ -1,0 +1,6 @@
+{
+  "name": "平面截距式直线方程计算器与解析几何解题画板",
+  "description": "高中解析几何截距式直线方程计算器，提供详细解题步骤、配方法极值推导、交互式画板画图核对与一键导出PDF功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
