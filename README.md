@@ -1,10 +1,13 @@
 # Intercept Form Line Equation Calculator & Analytic Geometry Solver
 ## 平面截距式直线方程计算器与解析几何解题画板
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-formulacalckit.com-0284c7?style=flat&logo=google-chrome&logoColor=white)](https://intercept-form-line-calculator.formulacalckit.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React_19-20232A?style=flat&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![KaTeX](https://img.shields.io/badge/LaTeX-KaTeX-059669?style=flat)](https://katex.org/)
+
+🔗 **Live Production Website**: [https://intercept-form-line-calculator.formulacalckit.com/](https://intercept-form-line-calculator.formulacalckit.com/)
 
 An interactive 2D analytic geometry web application for solving and graphing **intercept form line equations** ($\frac{x}{a} + \frac{y}{b} = 1$). Designed for high school students, teachers, and exam candidates worldwide (SAT, AP Precalculus, Gaokao, Selectividad, Baccalauréat, ENEM).
 

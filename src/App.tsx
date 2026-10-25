@@ -11,8 +11,31 @@ import { Language, translations } from './utils/i18n';
 import { Compass, BookOpenCheck, Layers, Calculator, Sparkles } from 'lucide-react';
 
 export default function App() {
-  // Default language is English as required by the user prompt ("默认英语")
-  const [language, setLanguage] = useState<Language>('en');
+  // Default language is English as required by the user prompt ("默认英语"), with URL query param support for SEO
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlLang = params.get('lang');
+      if (urlLang && ['en', 'es', 'fr', 'pt', 'zh'].includes(urlLang)) {
+        return urlLang as Language;
+      }
+    }
+    return 'en';
+  });
+
+  const handleLanguageChange = (newLang: Language) => {
+    setLanguage(newLang);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (newLang === 'en') {
+        url.searchParams.delete('lang');
+      } else {
+        url.searchParams.set('lang', newLang);
+      }
+      window.history.replaceState({}, '', url.toString());
+      document.documentElement.lang = newLang === 'zh' ? 'zh-CN' : newLang;
+    }
+  };
 
   // Default parameters: 3, 4
   const [a, setA] = useState<number>(3);
@@ -50,7 +73,7 @@ export default function App() {
         activeSection={activeSection}
         onNavigate={handleNavigate}
         language={language}
-        onLanguageChange={setLanguage}
+        onLanguageChange={handleLanguageChange}
       />
 
       {/* Print-only Exam Sheet Header (Localized) */}
