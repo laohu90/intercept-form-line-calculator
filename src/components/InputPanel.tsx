@@ -517,6 +517,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
             id="topic-search-input"
             type="text"
             value={searchKeyword}
+            onFocus={(e) => e.currentTarget.select()}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t.search.placeholder}
             className="w-full bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 rounded-lg pl-10 pr-24 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-800 transition-colors"
@@ -623,6 +624,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                   id="param-a-input"
                   type="text"
                   value={inputA}
+                  onFocus={(e) => e.currentTarget.select()}
                   onChange={(e) => handleApplyA(e.target.value)}
                   placeholder="e.g. 3 or 2/3"
                   className={`flex-1 rounded-lg px-3.5 py-2 text-base font-mono transition-colors focus:outline-none focus:ring-2 ${
@@ -706,6 +708,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                   id="param-b-input"
                   type="text"
                   value={inputB}
+                  onFocus={(e) => e.currentTarget.select()}
                   onChange={(e) => handleApplyB(e.target.value)}
                   placeholder="e.g. 4 or -5/2"
                   className={`flex-1 rounded-lg px-3.5 py-2 text-base font-mono transition-colors focus:outline-none focus:ring-2 ${
@@ -765,6 +768,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p1x-input"
                 type="text"
                 value={p1x}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setP1x(e.target.value);
                   executeTwoPointsSolve(e.target.value, p1y, p2x, p2y);
@@ -778,6 +782,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p1y-input"
                 type="text"
                 value={p1y}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setP1y(e.target.value);
                   executeTwoPointsSolve(p1x, e.target.value, p2x, p2y);
@@ -791,6 +796,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p2x-input"
                 type="text"
                 value={p2x}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setP2x(e.target.value);
                   executeTwoPointsSolve(p1x, p1y, e.target.value, p2y);
@@ -804,6 +810,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="p2y-input"
                 type="text"
                 value={p2y}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setP2y(e.target.value);
                   executeTwoPointsSolve(p1x, p1y, p2x, e.target.value);
@@ -841,6 +848,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-a-input"
                 type="text"
                 value={genA}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setGenA(e.target.value);
                   executeGeneralFormSolve(e.target.value, genB, genC);
@@ -854,6 +862,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-b-input"
                 type="text"
                 value={genB}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setGenB(e.target.value);
                   executeGeneralFormSolve(genA, e.target.value, genC);
@@ -867,6 +876,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="gen-c-input"
                 type="text"
                 value={genC}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setGenC(e.target.value);
                   executeGeneralFormSolve(genA, genB, e.target.value);
@@ -897,6 +907,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-x-input"
                 type="text"
                 value={psX}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setPsX(e.target.value);
                   executePointSlopeSolve(e.target.value, psY, psK);
@@ -910,6 +921,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-y-input"
                 type="text"
                 value={psY}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setPsY(e.target.value);
                   executePointSlopeSolve(psX, e.target.value, psK);
@@ -923,6 +935,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({
                 id="ps-k-input"
                 type="text"
                 value={psK}
+                onFocus={(e) => e.currentTarget.select()}
                 onChange={(e) => {
                   setPsK(e.target.value);
                   executePointSlopeSolve(psX, psY, e.target.value);

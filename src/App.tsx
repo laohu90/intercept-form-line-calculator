@@ -9,7 +9,7 @@ import { TrustModals, ModalType } from './components/TrustModals';
 import { MathView } from './components/MathView';
 import { computeLineDetails, formatFloat, LineCalculations } from './utils/mathUtils';
 import { Language, translations } from './utils/i18n';
-import { Compass, BookOpenCheck, Layers, Calculator, Sparkles, ShieldCheck, Mail, Info, FileText } from 'lucide-react';
+import { Compass, BookOpenCheck, Layers, Calculator, Sparkles, ShieldCheck, Mail, Info, FileText, FileCode } from 'lucide-react';
 
 export default function App() {
   // Default language is English as required by the user prompt ("默认英语"), with URL query param support for SEO
@@ -270,40 +270,59 @@ export default function App() {
               </h3>
               <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <button
-                    onClick={() => setActiveModal('about')}
+                  <a
+                    href="#about"
+                    onClick={(e) => { e.preventDefault(); setActiveModal('about'); }}
+                    role="button"
                     className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
                   >
                     <Info className="w-3.5 h-3.5 text-slate-400" />
                     <span>{t.trust.about}</span>
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button
-                    onClick={() => setActiveModal('privacy')}
+                  <a
+                    href="#privacy"
+                    onClick={(e) => { e.preventDefault(); setActiveModal('privacy'); }}
+                    role="button"
                     className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
                   >
                     <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
                     <span>{t.trust.privacy}</span>
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button
-                    onClick={() => setActiveModal('terms')}
+                  <a
+                    href="#terms"
+                    onClick={(e) => { e.preventDefault(); setActiveModal('terms'); }}
+                    role="button"
                     className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
                   >
                     <FileText className="w-3.5 h-3.5 text-slate-400" />
                     <span>{t.trust.terms}</span>
-                  </button>
+                  </a>
                 </li>
                 <li>
-                  <button
-                    onClick={() => setActiveModal('contact')}
+                  <a
+                    href="#contact"
+                    onClick={(e) => { e.preventDefault(); setActiveModal('contact'); }}
+                    role="button"
                     className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5"
                   >
                     <Mail className="w-3.5 h-3.5 text-slate-400" />
                     <span>{t.trust.contact}</span>
-                  </button>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/laohu90/intercept-form-line-calculator"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-slate-900 hover:underline cursor-pointer flex items-center gap-1.5 text-slate-500"
+                  >
+                    <FileCode className="w-3.5 h-3.5 text-slate-400" />
+                    <span>GitHub Repository</span>
+                  </a>
                 </li>
               </ul>
             </div>

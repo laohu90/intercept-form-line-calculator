@@ -81,16 +81,29 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
     setZoom(targetZoom);
   };
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).dataset.point) {
-      setDraggingPoint((e.target as HTMLElement).dataset.point as 'A' | 'B');
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    if (target && target.dataset && target.dataset.point) {
+      setDraggingPoint(target.dataset.point as 'A' | 'B');
+      try {
+        target.setPointerCapture(e.pointerId);
+      } catch {
+        // ignore
+      }
       return;
     }
     setIsPanning(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    try {
+      if (containerRef.current) {
+        containerRef.current.setPointerCapture(e.pointerId);
+      }
+    } catch {
+      // ignore
+    }
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handlePointerMove = (e: React.PointerEvent) => {
     if (draggingPoint) {
       if (!svgRef.current || calc.kind !== 'intercept') return;
       const rect = svgRef.current.getBoundingClientRect();
@@ -118,9 +131,14 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     setIsPanning(false);
     setDraggingPoint(null);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
   };
 
   const exportAsPng = () => {
@@ -270,12 +288,12 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
       {/* SVG Canvas Stage */}
       <div
         ref={containerRef}
-        className="w-full relative cursor-crosshair select-none bg-white overflow-hidden"
+        className="w-full relative cursor-crosshair select-none bg-white overflow-hidden touch-none"
         style={{ height: `${dimensions.height}px` }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       >
         <svg
           ref={svgRef}
