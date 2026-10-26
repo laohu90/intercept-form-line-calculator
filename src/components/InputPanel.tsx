@@ -384,8 +384,9 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     }
     const res = solveFromTwoPoints(p1xP, p1yP, p2xP, p2yP);
     if (!res.isValid) {
-      setErrorMsg(res.error || t.input.invalidWarning);
-      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(res.error || t.input.invalidWarning));
+      const errText = (res.errorCode && (t.validation as Record<string, string>)[res.errorCode]) || res.error || t.input.invalidWarning;
+      setErrorMsg(errText);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(errText));
       return;
     }
     setErrorMsg(null);
@@ -414,8 +415,9 @@ export const InputPanel: React.FC<InputPanelProps> = ({
     }
     const res = solveFromGeneralForm(aVal, bVal, cVal);
     if (!res.isValid) {
-      setErrorMsg(res.error || t.input.invalidWarning);
-      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(res.error || t.input.invalidWarning));
+      const errText = (res.errorCode && (t.validation as Record<string, string>)[res.errorCode]) || res.error || t.input.invalidWarning;
+      setErrorMsg(errText);
+      if (onLineCalcChange) onLineCalcChange(computeInvalidLine(errText));
       return;
     }
     setErrorMsg(null);
@@ -1058,7 +1060,15 @@ export const InputPanel: React.FC<InputPanelProps> = ({
               return (
                 <button
                   key={preset.id}
-                  onClick={() => onChange(preset.a, preset.b)}
+                  onClick={() => {
+                    setMode('intercepts');
+                    setInputA(preset.a.toString());
+                    setInputB(preset.b.toString());
+                    setErrorA(null);
+                    setErrorB(null);
+                    setErrorMsg(null);
+                    onChange(preset.a, preset.b);
+                  }}
                   className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                     isCurrent
                       ? 'border-slate-900 bg-slate-50 ring-1 ring-slate-900'

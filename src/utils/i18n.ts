@@ -195,6 +195,8 @@ export interface TranslationDictionary {
     zeroA: string;
     zeroB: string;
     zeroBoth: string;
+    identicalPoints: string;
+    invalidCoeffs: string;
   };
   trust: {
     about: string;
@@ -431,6 +433,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       zeroA: 'x-intercept a cannot be 0. Division by zero (x/0) is undefined. Intercept form does not exist.',
       zeroB: 'y-intercept b cannot be 0. Division by zero (y/0) is undefined. Intercept form does not exist.',
       zeroBoth: 'Both intercepts cannot be 0. The line passes through the origin (y = kx). Intercept form is undefined.',
+      identicalPoints: 'Two distinct points are required to define a line. Please enter different coordinates.',
+      invalidCoeffs: 'Coefficients A and B cannot both be 0.',
     },
     trust: {
       about: 'About Us & Methodology',
@@ -666,6 +670,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       zeroA: 'La intersección x "a" no puede ser 0. División por cero (x/0) indefinida.',
       zeroB: 'La intersección y "b" no puede ser 0. División por cero (y/0) indefinida.',
       zeroBoth: 'Ambas intersecciones no pueden ser 0. La recta pasa por el origen (y = kx).',
+      identicalPoints: 'Se requieren dos puntos distintos para definir una recta. Ingrese coordenadas diferentes.',
+      invalidCoeffs: 'Los coeficientes A y B no pueden ser ambos 0.',
     },
     trust: {
       about: 'Quiénes Somos y Metodología',
@@ -901,6 +907,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       zeroA: 'L’abscisse à l’origine a ne peut pas être 0. La division par zéro (x/0) n’est pas définie.',
       zeroB: 'L’ordonnée à l’origine b ne peut pas être 0. La division par zéro (y/0) n’est pas définie.',
       zeroBoth: 'Les deux intersections ne peuvent être 0. La droite passe par l’origine (y = kx).',
+      identicalPoints: 'Deux points distincts sont requis pour définir une droite. Entrez des coordonnées différentes.',
+      invalidCoeffs: 'Les coefficients A et B ne peuvent pas être tous les deux égaux à 0.',
     },
     trust: {
       about: 'À Propos et Méthodologie',
@@ -1136,6 +1144,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       zeroA: 'O intercepto x (a) não pode ser 0. Divisão por zero (x/0) indefinida.',
       zeroB: 'O intercepto y (b) não pode ser 0. Divisão por zero (y/0) indefinida.',
       zeroBoth: 'Ambos os interceptos não podem ser 0. A reta passa pela origem (y = kx).',
+      identicalPoints: 'Dois pontos distintos são necessários para definir uma reta. Insira coordenadas diferentes.',
+      invalidCoeffs: 'Os coeficientes A e B não podem ser ambos 0.',
     },
     trust: {
       about: 'Sobre Nós e Metodologia',
@@ -1370,6 +1380,8 @@ export const translations: Record<Language, TranslationDictionary> = {
       zeroA: '横截距 a 不能为 0！分母为零 (x/0) 无数学意义，截距式方程不能表示过原点的直线。',
       zeroB: '纵截距 b 不能为 0！分母为零 (y/0) 无数学意义，截距式方程不能表示过原点的直线。',
       zeroBoth: '截距不能同时为 0！直线过原点 O(0,0)，截距式无意义，应使用 y = kx。',
+      identicalPoints: '需要两个不同的点才能确定唯一的直线，请输入不同坐标。',
+      invalidCoeffs: '一般式系数 A 和 B 不能同时为 0。',
     },
     trust: {
       about: '关于我们与学术教研',

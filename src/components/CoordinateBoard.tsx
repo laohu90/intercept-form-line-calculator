@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Download, Eye, EyeOff, Move } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Download, Eye, EyeOff, Move, AlertCircle } from 'lucide-react';
 import { LineCalculations, formatFloat } from '../utils/mathUtils';
 import { Language, translations } from '../utils/i18n';
 
@@ -717,30 +717,22 @@ export const CoordinateBoard: React.FC<CoordinateBoardProps> = ({
             </g>
           )}
 
-          {/* 5. Invalid / Warning State Display */}
-          {calc.kind === 'invalid' && (
-            <g className="invalid-state-layer">
-              <rect
-                x={centerX - 190}
-                y={centerY - 30}
-                width={380}
-                height={60}
-                rx={10}
-                fill="#fffbeb"
-                stroke="#f59e0b"
-                strokeWidth="1.5"
-              />
-              <text
-                x={centerX}
-                y={centerY + 5}
-                textAnchor="middle"
-                className="text-xs font-semibold fill-amber-900 select-none"
-              >
-                {calc.errorMessage || t.input.invalidWarning}
-              </text>
-            </g>
-          )}
         </svg>
+
+        {/* Invalid / Warning State Overlay */}
+        {calc.kind === 'invalid' && (
+          <div className="absolute inset-0 flex items-center justify-center p-6 bg-amber-50/80 backdrop-blur-2xs pointer-events-none">
+            <div className="max-w-md w-full bg-white border border-amber-300 rounded-xl p-4 shadow-md text-center space-y-2 pointer-events-auto">
+              <div className="flex items-center justify-center gap-2 text-amber-800 font-bold text-sm">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                <span>{t.steps.errorTitle}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
+                {calc.errorMessage || t.input.invalidWarning}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Legend Overlay */}
         <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-xs border border-slate-200 px-3.5 py-2.5 rounded-lg text-xs text-slate-700 shadow-2xs space-y-1.5 select-none pointer-events-none">

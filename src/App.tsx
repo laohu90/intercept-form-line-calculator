@@ -63,7 +63,26 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    window.print();
+    try {
+      window.print();
+    } catch (err) {
+      console.warn('Direct window.print trigger suppressed or unavailable:', err);
+      const printSheet = document.createElement('iframe');
+      printSheet.style.position = 'fixed';
+      printSheet.style.right = '0';
+      printSheet.style.bottom = '0';
+      printSheet.style.width = '0';
+      printSheet.style.height = '0';
+      printSheet.style.border = '0';
+      document.body.appendChild(printSheet);
+      if (printSheet.contentWindow) {
+        printSheet.contentWindow.document.write(document.documentElement.outerHTML);
+        printSheet.contentWindow.document.close();
+        printSheet.contentWindow.focus();
+        printSheet.contentWindow.print();
+        setTimeout(() => document.body.removeChild(printSheet), 1000);
+      }
+    }
   };
 
   const handleNavigate = (sectionId: string) => {

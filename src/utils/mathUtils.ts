@@ -636,11 +636,12 @@ export function solveFromTwoPoints(
   y1: number,
   x2: number,
   y2: number
-): { lineCalc: LineCalculations; isValid: boolean; error?: string } {
+): { lineCalc: LineCalculations; isValid: boolean; error?: string; errorCode?: string } {
   if (Math.abs(x1 - x2) < 1e-6 && Math.abs(y1 - y2) < 1e-6) {
     return {
       lineCalc: computeLineDetails(3, 4),
       isValid: false,
+      errorCode: 'identicalPoints',
       error: 'The two points are identical. Two distinct points are required to define a line.',
     };
   }
@@ -693,11 +694,12 @@ export function solveFromGeneralForm(
   A: number,
   B: number,
   C: number
-): { lineCalc: LineCalculations; isValid: boolean; error?: string } {
+): { lineCalc: LineCalculations; isValid: boolean; error?: string; errorCode?: string } {
   if (Math.abs(A) < 1e-6 && Math.abs(B) < 1e-6) {
     return {
       lineCalc: computeLineDetails(3, 4),
       isValid: false,
+      errorCode: 'invalidCoeffs',
       error: 'Invalid line: Coefficients A and B cannot both be 0.',
     };
   }
